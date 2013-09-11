@@ -62,29 +62,31 @@
           col (color r g b a)]
       (is (close-to (rgb-components col) [ r g b a ] 0.01)))))
 
+(defmacro is-image [ width height pixels name & body ]
+  `(testing ~name
+     (let [~'img (buffered-image ~width ~height :rgb)
+           ~'W -1
+           ~'R -65536
+           ~'B -16776961
+           ~'T  0]
+       (with-2d-context ~'img
+         ~@body
+  
+         (save ~'img (str ".test-out/" ~name "-" ~width "x" ~height ".png"))
+         (is (=(seq (pixels ~'img)) ~pixels))))))
+
+
 (deftest background-test
-  (testing "Background color"
-    (let [img (buffered-image 3 3 :rgb)
-          W -1
-          R -65536
-          T  0]
-      (with-2d-context img
-        (background (color 1.0 0.0 0.0 1.0))
-        (save img ".test-out/background-3x3.png")
-        (is (=(seq (pixels img)) [R R R
-                                  R R R
-                                  R R R]))))))
-    
+  (is-image 3 3 [R R R
+                 R R R
+                 R R R]
+    "background"
+    (background (color 1.0 0.0 0.0 1.0))))
 
 (deftest shape-drawing-test
-  (testing "Line drawing"
-    (let [img (buffered-image 3 3 :rgb)
-          W -1
-          T  0]
-      (with-2d-context img
-        (line 0 0 2 2)
-        (save img ".test-out/line-3x3.png")
-        (is (=(seq (pixels img)) [W T T
-                                  T W T
-                                  T T W]))))))
+  (is-image 3 3 [W T T
+                 T W T
+                 T T W]
+    "line"
+    (line 0 0 2 2)))
 
