@@ -88,5 +88,10 @@
                  T W T
                  T T W]
     "line"
-    (line 0 0 2 2)))
+    (line 0 0 2 2))
+  (is-image 3 3 [W W W
+                 W T W
+                 W W W]
+    "rectangle"
+    (rectangle 0 0 2 2)))
 

@@ -1,6 +1,7 @@
 (ns clo2d.core
   (:import (java.awt.image BufferedImage)
            (java.awt.geom Line2D$Double)
+           (java.awt.geom Rectangle2D$Double)
            (javax.imageio ImageIO)
            (java.io File)))
 
@@ -85,3 +86,10 @@
   Coordinates are expressed as double."
   [ x1 y1 x2 y2 ]
   (draw (Line2D$Double. x1 y1 x2 y2)))
+
+(defn rectangle
+  "Draw a rectangle of width `w` and height `h` at (x,y)"
+  [ x y w h ]
+  (draw (Rectangle2D$Double. x y w h)))
+
+
