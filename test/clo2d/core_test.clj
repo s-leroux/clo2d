@@ -38,3 +38,16 @@
         (is (instance? java.awt.Graphics2D *g2d*))
       )
       (is (= *g2d* old-g2d)))))
+
+(deftest shape-drawing-test
+  (testing "Line drawing"
+    (let [img (buffered-image 3 3 :rgb)
+          W -1
+          T  0]
+      (with-2d-context img
+        (line 0 0 2 2)
+        (save img ".test-out/line-3x3.png")
+        (is (=(seq (pixels img)) [W T T
+                                  T W T
+                                  T T W]))))))
+
