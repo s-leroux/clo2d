@@ -11,3 +11,12 @@
       (is (= (seq (.getComponentSize (.getColorModel img))) [8 8 8 8]))
       (is (= (.getWidth img) width))
       (is (= (.getHeight img) height)))))
+
+(deftest g2d-context-creation-test
+  (testing "Graphics2D context creation"
+    (let [old-g2d *g2d*]
+      (with-2d-context (buffered-image 50 50 :rgb)
+        (is (not= old-g2d *g2d*))
+        (is (instance? java.awt.Graphics2D *g2d*))
+      )
+      (is (= *g2d* old-g2d)))))
