@@ -1,6 +1,8 @@
-(ns clo2d.core)
+(ns clo2d.core
+  (:import (java.awt.image BufferedImage)))
 
-(defn foo
-  "I don't do a whole lot."
-  [x]
-  (println x "Hello, World!"))
+(defn buffered-image 
+  "Create a new buffered image"
+  [ width height mode ]
+  (BufferedImage. width height (. BufferedImage TYPE_INT_ARGB)))
+
