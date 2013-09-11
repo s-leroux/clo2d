@@ -50,12 +50,35 @@
   `(binding [*g2d* (.createGraphics ~img)] ~@body))
 
 ;;
+;; Working with colors
+;;
+(defn color
+  "Create a new color object"
+  [ r g b a ]
+  (if (instance? java.lang.Double r)
+      (apply color (map float [r g b a]))
+      (java.awt.Color. r g b a)))
+
+(defmacro rgb-components
+  "Returns the RGB+alpha components of a color is the default sRGB
+  color space."
+  [ color ]
+  `(seq (.getRGBComponents ~color nil)))
+
+;;
 ;; Graphic primitives
 ;;
 (defn draw 
   "Draw a shape in the current context"
   [ ^java.awt.Shape shape ]
   (.draw *g2d* shape))
+
+(defn background
+  "Set the background color and erase the entire image"
+  [ ^java.awt.Color color ]
+  (doto *g2d* 
+      (.setBackground color) 
+      (.clearRect 0 0 (Integer/MAX_VALUE) (Integer/MAX_VALUE) )))
 
 (defn line
   "Draw a line from (x1,y1) to (x2,y2).

@@ -39,6 +39,43 @@
       )
       (is (= *g2d* old-g2d)))))
 
+(defn close-to 
+  (
+  [ a b delta1 delta2]
+  (if (seq? a)
+      (or  (and (empty? a) (empty? b))
+           (and (close-to (first a) (first b) delta1 delta2)
+                (close-to (rest a) (rest b) delta1 delta2)))
+      (< (- b delta1) a (+ b delta2))))
+  (
+  [ a b delta ]
+  (close-to a b delta delta))
+  )
+    
+
+(deftest color-test
+  (testing "Color creation"
+    (let [r    1.000
+          g    0.500
+          b    0.250
+          a    0.125
+          col (color r g b a)]
+      (is (close-to (rgb-components col) [ r g b a ] 0.01)))))
+
+(deftest background-test
+  (testing "Background color"
+    (let [img (buffered-image 3 3 :rgb)
+          W -1
+          R -65536
+          T  0]
+      (with-2d-context img
+        (background (color 1.0 0.0 0.0 1.0))
+        (save img ".test-out/background-3x3.png")
+        (is (=(seq (pixels img)) [R R R
+                                  R R R
+                                  R R R]))))))
+    
+
 (deftest shape-drawing-test
   (testing "Line drawing"
     (let [img (buffered-image 3 3 :rgb)
