@@ -67,6 +67,7 @@
      (let [~'img (buffered-image ~width ~height :rgb)
            ~'W -1
            ~'R -65536
+           ~'G -16711936
            ~'B -16776961
            ~'T  0]
        (with-2d-context ~'img
@@ -89,9 +90,19 @@
                  T T W]
     "line"
     (line 0 0 2 2))
+
   (is-image 3 3 [W W W
                  W T W
                  W W W]
     "rectangle"
-    (rectangle 0 0 2 2)))
+    (rectangle 0 0 2 2))
+
+  (is-image 3 3 [G G G
+                 G T G
+                 G G G]
+    "pen-color"
+    (pen (color 0.0 1.0 0.0 1.0))
+    (rectangle 0 0 2 2))
+    
+)
 

@@ -50,6 +50,11 @@
   [ img & body ]
   `(binding [*g2d* (.createGraphics ~img)] ~@body))
 
+(defn pen
+  "Set the drawing attribute"
+  [ color ]
+  (.setColor *g2d* color))
+
 ;;
 ;; Working with colors
 ;;
