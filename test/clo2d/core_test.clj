@@ -22,7 +22,7 @@
     (is (= (file-name-extension "img") "")))
 
   (testing "PNG file image creation"
-    (let [fname "test.png"
+    (let [fname ".test-out/test.png"
           img (buffered-image 50 50 :rgb)]
       (delete-file fname true)
       (save img fname)
