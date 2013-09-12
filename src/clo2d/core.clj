@@ -113,6 +113,11 @@
  (fn [ ^java.awt.Color color & tail ]
    (set-stroke color)
    tail)
+
+ :fill
+ (fn [ ^java.awt.Color color & tail ]
+   (set-fill color)
+   tail)
 })
 
 (defn display

@@ -115,13 +115,14 @@
     "shape-keyword"
     (display :shape (line 1 1 3 3)))
 
-  (is-image 5 5 [T T T T T
-                 T R T G T
-                 T T G T T
-                 T G T R T
-                 T T T T T]
-    "stroke-keyword"
-    (display :stroke (color :red) (line 1 1 3 3)
+  (is-image 5 5 [W W W W W
+                 W R B G W
+                 W B G B W
+                 W G B R W
+                 W W W W W]
+    "color-keywords"
+    (display :fill (color :blue) (rectangle 0 0 4 4)
+             :stroke (color :red) (line 1 1 3 3)
              :stroke (color :green) (line 1 3 3 1)))
 
   (is-image 5 5 [W W W W W
