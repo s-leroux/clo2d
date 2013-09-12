@@ -48,12 +48,14 @@
 (defmacro with-2d-context 
   "Push a new 2D graphic context"
   [ img & body ]
-  `(binding [*g2d* (.createGraphics ~img)] ~@body))
+  `(binding [*g2d* { :ctx (.createGraphics ~img) 
+                     :sc (color :white)
+                     :fc (color :transparent) } ] ~@body))
 
 (defn pen
   "Set the drawing attribute"
   [ color ]
-  (.setColor *g2d* color))
+  (set! *g2d* (assoc *g2d* :sc color)))
 
 ;;
 ;; Working with colors
@@ -67,6 +69,7 @@
   ( [ name ]
     ; should use a map here ? XXX
     (cond (= :black name) ( java.awt.Color/BLACK )
+          (= :white name) ( java.awt.Color/WHITE )
           (= :red name) ( java.awt.Color/RED )
           (= :green name) ( java.awt.Color/GREEN )
           (= :blue name) ( java.awt.Color/BLUE )
@@ -82,15 +85,27 @@
 ;;
 ;; Graphic primitives
 ;;
+(defn stroke 
+  "Draw the outline of a shape in the current context"
+  [ ^java.awt.Shape shape ]
+  (.setColor (:ctx *g2d*) (:sc *g2d*))
+  (.draw (:ctx *g2d*) shape))
+
+(defn fill 
+  "Fill a shape in the current context"
+  [ ^java.awt.Shape shape ]
+  (.setColor (:ctx *g2d*) (:fc *g2d*))
+  (.fill (:ctx *g2d*) shape))
+
 (defn draw 
   "Draw a shape in the current context"
   [ ^java.awt.Shape shape ]
-  (.draw *g2d* shape))
+  (.draw (:ctx *g2d*) shape))
 
 (defn background
   "Set the background color and erase the entire image"
   [ ^java.awt.Color color ]
-  (doto *g2d* 
+  (doto (:ctx *g2d*) 
       (.setBackground color) 
       (.clearRect 0 0 (Integer/MAX_VALUE) (Integer/MAX_VALUE) )))
 
@@ -103,6 +118,8 @@
 (defn rectangle
   "Draw a rectangle of width `w` and height `h` at (x,y)"
   [ x y w h ]
-  (draw (Rectangle2D$Double. x y w h)))
+  (let [shape (Rectangle2D$Double. x y w h)]
+    (fill shape)
+    (stroke shape)))
 
 

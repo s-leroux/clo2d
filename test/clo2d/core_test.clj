@@ -35,7 +35,7 @@
     (let [old-g2d *g2d*]
       (with-2d-context (buffered-image 50 50 :rgb)
         (is (not= old-g2d *g2d*))
-        (is (instance? java.awt.Graphics2D *g2d*))
+        (is (instance? java.awt.Graphics2D (:ctx *g2d*)))
       )
       (is (= *g2d* old-g2d)))))
 
