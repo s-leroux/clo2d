@@ -104,9 +104,13 @@
 
 (defn display 
   "Draw a shape in the current context"
-  [ ^java.awt.Shape shape ]
-  (fill shape)
-  (stroke shape))
+  [ & args ]
+  (loop [shapes args]
+    (if-let [shape? (first shapes)]
+      (do
+        (fill shape?)
+        (stroke shape?)
+        (recur (rest shapes))))))
 
 (defn background
   "Set the background color and erase the entire image"
@@ -116,15 +120,13 @@
       (.clearRect 0 0 (Integer/MAX_VALUE) (Integer/MAX_VALUE) )))
 
 (defn line
-  "Draw a line from (x1,y1) to (x2,y2).
+  "Create a line object from (x1,y1) to (x2,y2).
   Coordinates are expressed as double."
   [ x1 y1 x2 y2 ]
-  (stroke (Line2D$Double. x1 y1 x2 y2)))
+  (Line2D$Double. x1 y1 x2 y2))
 
 (defn rectangle
-  "Draw a rectangle of width `w` and height `h` at (x,y)"
+  "Create a rectangle of width `w` and height `h` at (x,y)"
   [ x y w h ]
-  (let [shape (Rectangle2D$Double. x y w h)]
-    (display shape)))
-
+  (Rectangle2D$Double. x y w h))
 

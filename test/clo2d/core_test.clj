@@ -96,7 +96,7 @@
                  T T T W T
                  T T T T T]
     "line"
-    (line 1 1 3 3))
+    (display (line 1 1 3 3)))
 
   (is-image 5 5 [T T T T T
                  T W W W T
@@ -104,7 +104,19 @@
                  T W W W T
                  T T T T T]
     "rectangle"
-    (rectangle 1 1 2 2)))
+    (display (rectangle 1 1 2 2))))
+
+(deftest multi-shape-test
+  (is-image 5 5 [W W W W W
+                 W G G G W
+                 W W W W W
+                 W G G G W
+                 W W W W W]
+    "rect+line"
+    (set-fill (color :green))
+    (display (rectangle 0 0 4 4)
+             (line 0 2 4 2))))
+
 
 (deftest pen-color-test
   (is-image 3 3 [R R R
@@ -114,6 +126,6 @@
     (set-stroke (color :red))
     (set-fill (color :green))
 
-    (rectangle 0 0 2 2)))
+    (display (rectangle 0 0 2 2))))
     
 
