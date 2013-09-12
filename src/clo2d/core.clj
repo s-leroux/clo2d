@@ -170,6 +170,11 @@
             (let [[x y & tail] data]
               (.lineTo p x y)
               (recur tail :L))
+
+            :C ; absolute curveTo (cubic Bezier curve)
+            (let [[x1 y1 x2 y2 x y & tail] data]
+              (.curveTo p x1 y1 x2 y2 x y)
+              (recur tail :C))
           )
         )))
     p))

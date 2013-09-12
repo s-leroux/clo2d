@@ -123,6 +123,16 @@
                  T T T T T]
     "path-open"
     (display :fill (color :black) (path :M 1 1 1 3 :M 3 1 :L 3 3)))
+
+  (is-image 5 5 [R R T T T
+                 K K R T T
+                 K K R T T
+                 K K R T T
+                 R R T T T]
+    "path-curveTo"
+    (display :stroke (color :red)
+             :fill (color :black)
+             (path :M 0 0 :L 0 0 :C 3 1 3 4 0 4)))
 )
 
 (deftest draw-mini-language-test
