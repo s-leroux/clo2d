@@ -106,7 +106,24 @@
     "rectangle"
     (display (rectangle 1 1 2 2))))
 
-(deftest multi-shape-test
+(deftest draw-mini-language-test
+  (is-image 5 5 [T T T T T
+                 T W T T T
+                 T T W T T
+                 T T T W T
+                 T T T T T]
+    "shape-keyword"
+    (display :shape (line 1 1 3 3)))
+
+  (is-image 5 5 [T T T T T
+                 T R T G T
+                 T T G T T
+                 T G T R T
+                 T T T T T]
+    "stroke-keyword"
+    (display :stroke (color :red) (line 1 1 3 3)
+             :stroke (color :green) (line 1 3 3 1)))
+
   (is-image 5 5 [W W W W W
                  W G G G W
                  W W W W W

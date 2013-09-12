@@ -102,15 +102,31 @@
   (.setColor (:ctx *g2d*) (:fc *g2d*))
   (.fill (:ctx *g2d*) shape))
 
-(defn display 
+(def display-fn {
+ :shape
+ (fn [ ^java.awt.Shape shape & tail ]
+   (fill shape)
+   (stroke shape)
+   tail)
+
+ :stroke
+ (fn [ ^java.awt.Color color & tail ]
+   (set-stroke color)
+   tail)
+})
+
+(defn display
   "Draw a shape in the current context"
   [ & args ]
   (loop [shapes args]
-    (if-let [shape? (first shapes)]
-      (do
-        (fill shape?)
-        (stroke shape?)
-        (recur (rest shapes))))))
+    (if-let [item (first shapes)]
+      (recur
+        (cond
+          (keyword? item)
+          (apply (item display-fn) (rest shapes))
+
+          (instance? java.awt.Shape item)
+          (apply (:shape display-fn) item (rest shapes)))))))
 
 (defn background
   "Set the background color and erase the entire image"
