@@ -54,13 +54,18 @@
     
 
 (deftest color-test
-  (testing "Color creation"
+  (testing "RGB Color creation"
     (let [r    1.000
           g    0.500
           b    0.250
           a    0.125
           col (color r g b a)]
-      (is (close-to (rgb-components col) [ r g b a ] 0.01)))))
+      (is (close-to (rgb-components col) [ r g b a ] 0.01))))
+  (testing "Color by keyword"
+    (let [col (color :red)]
+      (is (close-to (rgb-components col) [ 1.0 0.0 0.0 1.0 ] 0.01)))
+  )
+)
 
 (defmacro is-image [ width height pixels name & body ]
   `(testing ~name

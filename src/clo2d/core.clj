@@ -60,10 +60,18 @@
 ;;
 (defn color
   "Create a new color object"
-  [ r g b a ]
-  (if (instance? java.lang.Double r)
-      (apply color (map float [r g b a]))
-      (java.awt.Color. r g b a)))
+  ( [ r g b a ]
+    (if (instance? java.lang.Double r)
+        (apply color (map float [r g b a]))
+        (java.awt.Color. r g b a)))
+  ( [ name ]
+    ; should use a map here ? XXX
+    (cond (= :black name) ( java.awt.Color/BLACK )
+          (= :red name) ( java.awt.Color/RED )
+          (= :green name) ( java.awt.Color/GREEN )
+          (= :blue name) ( java.awt.Color/BLUE )
+          (= :transparent name) ( color 0.0 0.0 0.0 0.0 )
+    )))
 
 (defmacro rgb-components
   "Returns the RGB+alpha components of a color is the default sRGB
