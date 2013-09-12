@@ -102,10 +102,11 @@
   (.setColor (:ctx *g2d*) (:fc *g2d*))
   (.fill (:ctx *g2d*) shape))
 
-(defn draw 
+(defn display 
   "Draw a shape in the current context"
   [ ^java.awt.Shape shape ]
-  (.draw (:ctx *g2d*) shape))
+  (fill shape)
+  (stroke shape))
 
 (defn background
   "Set the background color and erase the entire image"
@@ -118,13 +119,12 @@
   "Draw a line from (x1,y1) to (x2,y2).
   Coordinates are expressed as double."
   [ x1 y1 x2 y2 ]
-  (draw (Line2D$Double. x1 y1 x2 y2)))
+  (stroke (Line2D$Double. x1 y1 x2 y2)))
 
 (defn rectangle
   "Draw a rectangle of width `w` and height `h` at (x,y)"
   [ x y w h ]
   (let [shape (Rectangle2D$Double. x y w h)]
-    (fill shape)
-    (stroke shape)))
+    (display shape)))
 
 
