@@ -90,17 +90,21 @@
     (background (color 1.0 0.0 0.0 1.0))))
 
 (deftest shape-drawing-test
-  (is-image 3 3 [W T T
-                 T W T
-                 T T W]
+  (is-image 5 5 [T T T T T
+                 T W T T T
+                 T T W T T
+                 T T T W T
+                 T T T T T]
     "line"
-    (line 0 0 2 2))
+    (line 1 1 3 3))
 
-  (is-image 3 3 [W W W
-                 W T W
-                 W W W]
+  (is-image 5 5 [T T T T T
+                 T W W W T
+                 T W T W T
+                 T W W W T
+                 T T T T T]
     "rectangle"
-    (rectangle 0 0 2 2)))
+    (rectangle 1 1 2 2)))
 
 (deftest pen-color-test
   (is-image 3 3 [R R R
