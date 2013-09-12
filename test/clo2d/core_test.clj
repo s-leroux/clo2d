@@ -164,6 +164,25 @@
     (display (rectangle 0 0 4 4)
              (line 0 2 4 2))))
 
+(deftest transformation-test
+  (is-image 5 5 [W W W T T
+                 T T T T T
+                 T T T T T
+                 T T T T T
+                 T T T T T]
+    "transformation"
+    (rotate (/ Math/PI -2.0))
+    (display :shape (line 0 0 0 2)))
+
+  (is-image 5 5 [T T T T T
+                 T T W T T
+                 T T W T T
+                 T T W T T
+                 T T T T T]
+    "transformation"
+    (translate 2 1)
+    (display :shape (line 0 0 0 2)))
+)
 
 (deftest pen-color-test
   (is-image 3 3 [R R R

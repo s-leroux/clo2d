@@ -89,6 +89,19 @@
   `(seq (.getRGBComponents ~color nil)))
 
 ;;
+;; Transformations
+;;
+(defn rotate
+  "Apply a rotation transform."
+  [ theta ]
+  (.rotate (:ctx *g2d*) theta ))
+
+(defn translate
+  "Apply a translation transform."
+  [ dx dy ]
+  (.translate (:ctx *g2d*) dx dy ))
+
+;;
 ;; Graphic primitives
 ;;
 (defn stroke 
