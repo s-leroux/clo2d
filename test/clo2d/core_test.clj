@@ -104,7 +104,16 @@
                  T W W W T
                  T T T T T]
     "rectangle"
-    (display (rectangle 1 1 2 2))))
+    (display (rectangle 1 1 2 2)))
+
+  (is-image 5 5 [T T T T T
+                 T W W W T
+                 T T T W T
+                 T W W W T
+                 T T T T T]
+    "path"
+    (display (path 1 1 3 1 3 3 1 3)))
+)
 
 (deftest draw-mini-language-test
   (is-image 5 5 [T T T T T

@@ -2,6 +2,7 @@
   (:import (java.awt.image BufferedImage)
            (java.awt.geom Line2D$Double)
            (java.awt.geom Rectangle2D$Double)
+           (java.awt.geom Path2D$Double)
            (javax.imageio ImageIO)
            (java.io File)))
 
@@ -150,4 +151,26 @@
   "Create a rectangle of width `w` and height `h` at (x,y)"
   [ x y w h ]
   (Rectangle2D$Double. x y w h))
+
+(defn path
+  "Create a path using SVG-like specifications"
+  [ & args ]
+  (let [p (Path2D$Double.)]
+    (loop [specs args kw :M ]
+      (if-let [f (first specs)]
+        (let [cmd (if (keyword? f) f kw)
+              data (if (keyword? f) (rest specs) specs)]
+          (case cmd
+            :M ; absolute moveTo
+            (let [[x y & tail] data]
+              (.moveTo p x y)
+              (recur tail :L))
+
+            :L ; absolute lineTo
+            (let [[x y & tail] data]
+              (.lineTo p x y)
+              (recur tail :L))
+          )
+        )))
+    p))
 
