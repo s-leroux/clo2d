@@ -52,10 +52,15 @@
                      :sc (color :white)
                      :fc (color :transparent) } ] ~@body))
 
-(defn pen
-  "Set the drawing attribute"
+(defn set-stroke
+  "Set the stroke drawing attribute"
   [ color ]
   (set! *g2d* (assoc *g2d* :sc color)))
+
+(defn set-fill
+  "Set the fill drawing attribute"
+  [ color ]
+  (set! *g2d* (assoc *g2d* :fc color)))
 
 ;;
 ;; Working with colors

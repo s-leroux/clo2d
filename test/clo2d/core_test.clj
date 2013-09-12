@@ -100,14 +100,16 @@
                  W T W
                  W W W]
     "rectangle"
-    (rectangle 0 0 2 2))
+    (rectangle 0 0 2 2)))
 
-  (is-image 3 3 [G G G
-                 G T G
-                 G G G]
+(deftest pen-color-test
+  (is-image 3 3 [R R R
+                 R G R
+                 R R R]
     "pen-color"
-    (pen (color 0.0 1.0 0.0 1.0))
-    (rectangle 0 0 2 2))
+    (set-stroke (color :red))
+    (set-fill (color :green))
+
+    (rectangle 0 0 2 2)))
     
-)
 
