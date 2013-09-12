@@ -71,6 +71,7 @@
   `(testing ~name
      (let [~'img (buffered-image ~width ~height :rgb)
            ~'W -1
+           ~'K -16777216
            ~'R -65536
            ~'G -16711936
            ~'B -16776961
@@ -106,13 +107,22 @@
     "rectangle"
     (display (rectangle 1 1 2 2)))
 
+
   (is-image 5 5 [T T T T T
                  T W W W T
-                 T T T W T
+                 T K K W T
                  T W W W T
                  T T T T T]
     "path"
-    (display (path 1 1 3 1 3 3 1 3)))
+    (display :fill (color :black) (path 1 1 3 1 3 3 1 3)))
+
+  (is-image 5 5 [T T T T T
+                 T W T W T
+                 T W T W T
+                 T W T W T
+                 T T T T T]
+    "path-open"
+    (display :fill (color :black) (path :M 1 1 1 3 :M 3 1 :L 3 3)))
 )
 
 (deftest draw-mini-language-test
