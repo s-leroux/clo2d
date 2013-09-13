@@ -170,7 +170,7 @@
                  T T T T T
                  T T T T T
                  T T T T T]
-    "transformation"
+    "rotate"
     (rotate (/ Math/PI -2.0))
     (display :shape (line 0 0 0 2)))
 
@@ -179,10 +179,25 @@
                  T T W T T
                  T T W T T
                  T T T T T]
-    "transformation"
+    "translate"
     (translate 2 1)
     (display :shape (line 0 0 0 2)))
 )
+
+(deftest transformation-context-test
+  (is-image 5 5 [W W W T T
+                 W T T T T
+                 W T T T T
+                 T T T T T
+                 T T T T T]
+    "transformation"
+    (with-transformation 
+      (rotate (/ Math/PI -2.0))
+      (display :shape (line 0 0 0 2)))
+
+    (display :shape (line 0 0 0 2)))
+)
+
 
 (deftest pen-color-test
   (is-image 3 3 [R R R

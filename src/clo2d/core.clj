@@ -1,5 +1,6 @@
 (ns clo2d.core
   (:import (java.awt.image BufferedImage)
+           (java.awt.geom AffineTransform)
            (java.awt.geom Line2D$Double)
            (java.awt.geom Rectangle2D$Double)
            (java.awt.geom Path2D$Double)
@@ -91,6 +92,15 @@
 ;;
 ;; Transformations
 ;;
+(defmacro with-transformation
+  "Push the current transformation matrix and
+  execute the body, finally restore it on exit."
+  [ & body ]
+  `(let [ ^AffineTransform matrix# (.getTransform (:ctx *g2d*))]
+     (try ~@body
+     (finally
+        (.setTransform (:ctx *g2d*) matrix#)))))
+
 (defn rotate
   "Apply a rotation transform."
   [ theta ]
