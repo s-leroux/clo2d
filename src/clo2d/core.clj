@@ -1,6 +1,7 @@
 (ns clo2d.core
   (:import (java.awt.image BufferedImage)
            (java.awt.geom AffineTransform)
+           (java.awt Shape)
            (java.awt.geom Line2D$Double)
            (java.awt.geom Rectangle2D$Double)
            (java.awt.geom Path2D$Double)
@@ -110,6 +111,25 @@
   "Apply a translation transform."
   [ dx dy ]
   (.translate (:ctx *g2d*) dx dy ))
+;;
+;; Clipping
+;;
+(defmacro with-clip
+  "Push the current clipping region and and the given shape
+  to it. Then execute the body, finally restore the clipping
+  region on exit."
+  [ ^Shape shape & body ]
+  `(let [ ^Shape clip# (.getClip (:ctx *g2d*))]
+     (try 
+       (clip ~shape)
+       ~@body
+     (finally
+        (.setClip (:ctx *g2d*) clip#)))))
+
+(defn clip
+  "Add a shape to the current clipping region"
+  [ ^Shape s ]
+  (.clip (:ctx *g2d*) s))
 
 ;;
 ;; Graphic primitives

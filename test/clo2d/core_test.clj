@@ -198,6 +198,33 @@
     (display :shape (line 0 0 0 2)))
 )
 
+(deftest clipping-test
+  (is-image 5 5 [T T T T T
+                 T W W W T
+                 T W W W T
+                 T W W W T
+                 T T T T T]
+    "clipping"
+    (clip (rectangle 1 1 3 3))
+    (display :stroke (color :transparent) 
+             :fill (color :white)
+             (rectangle 0 0 5 5)))
+
+  (is-image 5 5 [T T T T T
+                 T T T T T
+                 T T W T T
+                 T T T T T
+                 T T T T T]
+    "clip-context"
+    (clip (rectangle 0 0 3 3))
+    (let [old-clip (.getClip (:ctx *g2d*))]
+      (with-clip (rectangle 2 2 3 3)
+        (display :stroke (color :transparent) 
+                 :fill (color :white)
+                 (rectangle 0 0 5 5)))
+      (is (= (.getClip (:ctx *g2d*)) old-clip))))
+)
+
 
 (deftest pen-color-test
   (is-image 3 3 [R R R
