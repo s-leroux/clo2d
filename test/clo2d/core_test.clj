@@ -61,6 +61,7 @@
           a    0.125
           col (color r g b a)]
       (is (close-to (rgb-components col) [ r g b a ] 0.01))))
+
   (testing "Color by keyword"
     (let [col (color :red)]
       (is (close-to (rgb-components col) [ 1.0 0.0 0.0 1.0 ] 0.01)))
@@ -234,6 +235,17 @@
     (set-stroke (color :red))
     (set-fill (color :green))
 
-    (display (rectangle 0 0 2 2))))
+    (display (rectangle 0 0 2 2)))
+
+  (is-image 3 3 [R R R
+                 R G R
+                 R R R]
+    "pen-color-by-keyword"
+    (set-stroke :red)
+    (set-fill :green)
+
+    (display (rectangle 0 0 2 2)))
+    
+)
     
 

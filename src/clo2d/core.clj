@@ -43,29 +43,6 @@
   ))
 
 ;;
-;; Working with graphic contexts (Graphics2D)
-;;
-
-(def ^:dynamic *g2d*)
-
-(defmacro with-2d-context 
-  "Push a new 2D graphic context"
-  [ img & body ]
-  `(binding [*g2d* { :ctx (.createGraphics ~img) 
-                     :sc (color :white)
-                     :fc (color :transparent) } ] ~@body))
-
-(defn set-stroke
-  "Set the stroke drawing attribute"
-  [ color ]
-  (set! *g2d* (assoc *g2d* :sc color)))
-
-(defn set-fill
-  "Set the fill drawing attribute"
-  [ color ]
-  (set! *g2d* (assoc *g2d* :fc color)))
-
-;;
 ;; Working with colors
 ;;
 (defn color
@@ -89,6 +66,29 @@
   color space."
   [ color ]
   `(seq (.getRGBComponents ~color nil)))
+
+;;
+;; Working with graphic contexts (Graphics2D)
+;;
+
+(def ^:dynamic *g2d*)
+
+(defmacro with-2d-context 
+  "Push a new 2D graphic context"
+  [ img & body ]
+  `(binding [*g2d* { :ctx (.createGraphics ~img) 
+                     :sc (color :white)
+                     :fc (color :transparent) } ] ~@body))
+
+(defn set-stroke
+  "Set the stroke drawing attribute"
+  [ c ]
+  (set! *g2d* (assoc *g2d* :sc (if (keyword? c) (color c) c))))
+
+(defn set-fill
+  "Set the fill drawing attribute"
+  [ c ]
+  (set! *g2d* (assoc *g2d* :fc (if (keyword? c) (color c) c))))
 
 ;;
 ;; Transformations
