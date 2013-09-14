@@ -1,6 +1,7 @@
 (ns clo2d.core
   (:import (java.awt.image BufferedImage)
            (java.awt.geom AffineTransform)
+           (java.awt Font)
            (java.awt Shape)
            (java.awt.geom Line2D$Double)
            (java.awt.geom Rectangle2D$Double)
@@ -111,6 +112,7 @@
   "Apply a translation transform."
   [ dx dy ]
   (.translate (:ctx *g2d*) dx dy ))
+
 ;;
 ;; Clipping
 ;;
@@ -130,6 +132,23 @@
   "Add a shape to the current clipping region"
   [ ^Shape s ]
   (.clip (:ctx *g2d*) s))
+
+;;
+;; Text
+;;
+(defn set-font
+  "Set the current font given its name"
+  [ font-name ]
+  (if-let [ ^Font font (Font/decode font-name )]
+    (.setFont (:ctx *g2d*) font)))
+
+(defn draw-string
+  "Draw the specified string at the given position"
+  [ ^String str bx by ]
+  ( let [ x (float bx)
+          y (float by) ]
+    (.setColor (:ctx *g2d*) (:sc *g2d*))
+    (.drawString (:ctx *g2d*) str x y )))
 
 ;;
 ;; Graphic primitives

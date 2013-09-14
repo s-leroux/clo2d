@@ -136,6 +136,23 @@
              (path :M 0 0 :L 0 0 :C 3 1 3 4 0 4)))
 )
 
+(deftest text-drawing-test
+  (is-image 10 11 [T T T T T T T T T T
+                   T K K K T T K K K T
+                   T T K T T T T K T T
+                   T T T K T T K T T T
+                   T T T T K K T T T T
+                   T T T T K K T T T T
+                   T T T T K K T T T T
+                   T T T K T T K T T T
+                   T T K T T T T K T T
+                   T K K K T T K K K T
+                   T T T T T T T T T T]
+    "text"
+    (set-font java.awt.Font/SERIF)
+    (set-stroke (color :black))
+    (draw-string "X" 0 10)))
+
 (deftest draw-mini-language-test
   (is-image 5 5 [T T T T T
                  T W T T T
