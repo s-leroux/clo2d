@@ -3,6 +3,7 @@
            (java.awt.geom AffineTransform)
            (java.awt Font)
            (java.awt Shape)
+           (java.awt Graphics2D)
            (java.awt.geom Line2D$Double)
            (java.awt.geom Rectangle2D$Double)
            (java.awt.geom Path2D$Double)
@@ -79,7 +80,8 @@
   [ img & body ]
   `(binding [*g2d* { :ctx (.createGraphics ~img) 
                      :sc (color :white)
-                     :fc (color :transparent) } ] ~@body))
+                     :fc (color :transparent) 
+                     :tm (text-modes :left) } ] ~@body))
 
 (defn set-stroke
   "Set the stroke drawing attribute"
@@ -142,13 +144,41 @@
   (if-let [ ^Font font (Font/decode font-name )]
     (.setFont (:ctx *g2d*) font)))
 
+(def
+  text-modes
+  {
+    :left   (fn [ ctx str x y ] [x y])
+    :right (fn [ ^Graphics2D ctx ^String str x y ] 
+      (let [ frc (.getFontRenderContext ctx)
+             font (.getFont ctx)
+             bounds (.getStringBounds font str frc)
+             width (.getWidth bounds)]
+        [ (- x (+ 1 width) ) y ])
+    )
+    :center (fn [ ^Graphics2D ctx ^String str x y ] 
+      (let [ frc (.getFontRenderContext ctx)
+             font (.getFont ctx)
+             bounds (.getStringBounds font str frc)
+             width (.getWidth bounds)]
+        [ (- x (/ (+ 1 width) 2)) y ])
+    )
+
+  }
+)
+
+(defn text-align
+ "Set the text alignment"
+ [ mode ]
+ (set! *g2d* (assoc *g2d* :tm (text-modes mode))))
+
 (defn draw-string
   "Draw the specified string at the given position"
   [ ^String str bx by ]
-  ( let [ x (float bx)
-          y (float by) ]
+  ( let [ ctx (:ctx *g2d*)
+          tm  (:tm *g2d*)
+          [x y] (tm ctx str bx by) ]
     (.setColor (:ctx *g2d*) (:sc *g2d*))
-    (.drawString (:ctx *g2d*) str x y )))
+    (.drawString ctx str (float x) (float y) )))
 
 ;;
 ;; Graphic primitives

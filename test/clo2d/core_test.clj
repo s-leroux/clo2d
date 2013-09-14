@@ -151,7 +151,59 @@
     "text"
     (set-font java.awt.Font/SERIF)
     (set-stroke (color :black))
-    (draw-string "X" 0 10)))
+    (draw-string "X" 0 10))
+
+  (is-image 10 11 [T T T T T T T T T T
+                   T K K K T K K K T T
+                   T T K T T T K T T T
+                   T K T T T T T K T T
+                   K T T T T T T T K K
+                   K T T T T T T T K K
+                   K T T T T T T T K K
+                   T K T T T T T K T T
+                   T T K T T T K T T T
+                   T K K K T K K K T T
+                   T T T T T T T T T T]
+    "text-align-center"
+    (set-font java.awt.Font/SERIF)
+    (set-stroke (color :black))
+    (text-align :center)
+    (draw-string "XXX" 0 10))
+
+  (is-image 10 11 [T T T T T T T T T T
+                   T K K K T T K K K T
+                   T T K T T T T K T T
+                   T T T K T T K T T T
+                   T T T T K K T T T T
+                   T T T T K K T T T T
+                   T T T T K K T T T T
+                   T T T K T T K T T T
+                   T T K T T T T K T T
+                   T K K K T T K K K T
+                   T T T T T T T T T T]
+    "text-align-center-placement"
+    (set-font java.awt.Font/SERIF)
+    (set-stroke (color :black))
+    (text-align :center)
+    (draw-string "XX" 0 10))
+
+  (is-image 10 11 [T T T T T T T T T T
+                   T K K K T T K K K T
+                   T T K T T T T K T T
+                   T T T K T T K T T T
+                   T T T T K K T T T T
+                   T T T T K K T T T T
+                   T T T T K K T T T T
+                   T T T K T T K T T T
+                   T T K T T T T K T T
+                   T K K K T T K K K T
+                   T T T T T T T T T T]
+    "text-align-right"
+    (set-font java.awt.Font/SERIF)
+    (set-stroke (color :black))
+    (text-align :right)
+    (draw-string "WX" 10 10))
+)
 
 (deftest draw-mini-language-test
   (is-image 5 5 [T T T T T
