@@ -53,13 +53,13 @@
         (apply color (map float [r g b a]))
         (java.awt.Color. r g b a)))
   ( [ name ]
-    ; should use a map here ? XXX
-    (cond (= :black name) ( java.awt.Color/BLACK )
-          (= :white name) ( java.awt.Color/WHITE )
-          (= :red name) ( java.awt.Color/RED )
-          (= :green name) ( java.awt.Color/GREEN )
-          (= :blue name) ( java.awt.Color/BLUE )
-          (= :transparent name) ( color 0.0 0.0 0.0 0.0 )
+    (case name
+      :black       ( java.awt.Color/BLACK )
+      :white       ( java.awt.Color/WHITE )
+      :red         ( java.awt.Color/RED )
+      :green       ( java.awt.Color/GREEN )
+      :blue        ( java.awt.Color/BLUE )
+      :transparent ( color 0.0 0.0 0.0 0.0 )
     )))
 
 (defmacro rgb-components
