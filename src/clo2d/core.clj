@@ -245,29 +245,29 @@
   [ x y w h ]
   (Rectangle2D$Double. x y w h))
 
-(defn union
-  "Combine multiple shapes and return their union"
-  [ ^Shape s1 & args]
+(defn csg*
+  "Combine one shape/area with all those of a given list"
+  [ ^clojure.lang.IFn f 
+    ^Shape s1 
+    args ]
   (let [ ^Area a1 (if (instance? Area s1) s1 (Area. s1))]
     (loop [ ^Shape s2 (first args)
             shapes (rest args) ]
       (when s2
         (let [ ^Area a2 (if (instance? Area s2) s2 (Area. s2)) ]
-          (.add a1 a2)
+          (f a1 a2)
           (recur (first shapes) (rest shapes)))))
     a1))
 
+(defn union
+  "Combine multiple shapes and return their union"
+  [ ^Shape s1 & args]
+  (csg* (fn [^Area a1 ^Area a2] (.add a1 a2)) s1 args))
+
 (defn intersect
   "Combine multiple shapes and return their intersection"
-  [ ^Shape        s1 & args]
-  (let [ ^Area a1 (if (instance? Area s1) s1 (Area. s1))]
-    (loop [ ^Shape s2 (first args)
-            shapes (rest args) ]
-      (when s2
-        (let [ ^Area a2 (if (instance? Area s2) s2 (Area. s2)) ]
-          (.intersect a1 a2)
-          (recur (first shapes) (rest shapes)))))
-    a1))
+  [ ^Shape s1 & args]
+  (csg* (fn [^Area a1 ^Area a2] (.intersect a1 a2)) s1 args))
 
 (defn path
   "Create a path using SVG-like specifications"
