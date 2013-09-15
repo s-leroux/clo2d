@@ -136,6 +136,76 @@
              (path :M 0 0 :L 0 0 :C 3 1 3 4 0 4)))
 )
 
+
+(deftest path-manipulation-test
+  (is-image 8 8 [T T T T T T T T
+                 T B B B B B T T
+                 T B K K K B B T
+                 T B K K K K B T
+                 T B K K K K B T
+                 T B B K K K B T
+                 T T B B B B B T
+                 T T T T T T T T]
+    "path-union"
+    (let [r1 (rectangle 1 1 4 4)
+          r2 (rectangle 2 2 4 4)
+          path  (union r1 r2)]
+      (display :stroke :blue 
+               :fill :black
+               path)))
+
+  (is-image 8 8 [B B B B B T T T
+                 B K K K B B T T
+                 B K K K K B B T
+                 B K K K K K B B
+                 B B K K K K K B
+                 T B B K K K K B
+                 T T B B K K K B
+                 T T T B B B B B]
+    "path-union-n"
+    (let [r1 (rectangle 1 1 4 4)
+          r2 (rectangle 2 2 4 4)
+          r3 (rectangle 0 0 4 4)
+          r4 (rectangle 3 3 4 4)
+          path  (union r1 r2 r3 r4)]
+      (display :stroke :blue 
+               :fill :black
+               path)))
+
+  (is-image 8 8 [T T T T T T T T
+                 T T T T T T T T
+                 T T B B B B T T
+                 T T B K K B T T
+                 T T B K K B T T
+                 T T B B B B T T
+                 T T T T T T T T
+                 T T T T T T T T]
+    "path-intersection"
+    (let [r1 (rectangle 1 1 4 4)
+          r2 (rectangle 2 2 4 4)
+          path  (intersect r1 r2)]
+      (display :stroke :blue 
+               :fill :black
+               path)))
+
+  (is-image 8 8 [T T T T T T T T
+                 T T T T T T T T
+                 T T B B B T T T
+                 T T B K B T T T
+                 T T B B B T T T
+                 T T T T T T T T
+                 T T T T T T T T
+                 T T T T T T T T]
+    "path-intersection-n"
+    (let [r1 (rectangle 1 1 4 4)
+          r2 (rectangle 2 2 4 4)
+          r3 (rectangle 0 0 4 4)
+          path  (intersect r1 r2 r3)]
+      (display :stroke :blue 
+               :fill :black
+               path)))
+)
+
 (deftest text-drawing-test
   (is-image 10 11 [T T T T T T T T T T
                    T K K K T T K K K T

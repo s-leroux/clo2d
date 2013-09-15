@@ -4,6 +4,7 @@
            (java.awt Font)
            (java.awt Shape)
            (java.awt Graphics2D)
+           (java.awt.geom Area)
            (java.awt.geom Line2D$Double)
            (java.awt.geom Rectangle2D$Double)
            (java.awt.geom Path2D$Double)
@@ -243,6 +244,30 @@
   "Create a rectangle of width `w` and height `h` at (x,y)"
   [ x y w h ]
   (Rectangle2D$Double. x y w h))
+
+(defn union
+  "Combine multiple shapes and return their union"
+  [ ^Shape s1 & args]
+  (let [ ^Area a1 (if (instance? Area s1) s1 (Area. s1))]
+    (loop [ ^Shape s2 (first args)
+            shapes (rest args) ]
+      (when s2
+        (let [ ^Area a2 (if (instance? Area s2) s2 (Area. s2)) ]
+          (.add a1 a2)
+          (recur (first shapes) (rest shapes)))))
+    a1))
+
+(defn intersect
+  "Combine multiple shapes and return their intersection"
+  [ ^Shape        s1 & args]
+  (let [ ^Area a1 (if (instance? Area s1) s1 (Area. s1))]
+    (loop [ ^Shape s2 (first args)
+            shapes (rest args) ]
+      (when s2
+        (let [ ^Area a2 (if (instance? Area s2) s2 (Area. s2)) ]
+          (.intersect a1 a2)
+          (recur (first shapes) (rest shapes)))))
+    a1))
 
 (defn path
   "Create a path using SVG-like specifications"
