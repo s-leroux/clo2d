@@ -204,6 +204,38 @@
       (display :stroke :blue 
                :fill :black
                path)))
+
+  (is-image 8 8 [T T T T T T T T
+                 T B B B B B T T
+                 T B K K K B T T
+                 T B K B B B T T
+                 T B K B T T T T
+                 T B B B T T T T
+                 T T T T T T T T
+                 T T T T T T T T]
+    "path-diff"
+    (let [r1 (rectangle 1 1 4 4)
+          r2 (rectangle 3 3 4 4)
+          path  (diff r1 r2)]
+      (display :stroke :blue 
+               :fill :black
+               path)))
+
+  (is-image 8 8 [T T T T T T T T
+                 T B B B B B T T
+                 T B K K K B T T
+                 T B K B B B B B
+                 T B K B T B K B
+                 T B B B B B K B
+                 T T T B K K K B
+                 T T T B B B B B]
+    "path-xor"
+    (let [r1 (rectangle 1 1 4 4)
+          r2 (rectangle 3 3 4 4)
+          path  (xor r1 r2)]
+      (display :stroke :blue 
+               :fill :black
+               path)))
 )
 
 (deftest text-drawing-test

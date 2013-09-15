@@ -269,6 +269,17 @@
   [ ^Shape s1 & args]
   (csg* (fn [^Area a1 ^Area a2] (.intersect a1 a2)) s1 args))
 
+(defn diff
+  "Combine multiple shapes and return their difference"
+  [ ^Shape s1 & args]
+  (csg* (fn [^Area a1 ^Area a2] (.subtract a1 a2)) s1 args))
+
+(defn xor
+  "Combine multiple shapes by performing an exclusive or
+  operation"
+  [ ^Shape s1 & args]
+  (csg* (fn [^Area a1 ^Area a2] (.exclusiveOr a1 a2)) s1 args))
+
 (defn path
   "Create a path using SVG-like specifications"
   [ & args ]
