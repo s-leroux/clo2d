@@ -293,7 +293,7 @@
                    T T T T T T T T T T]
     "text"
     (set-font java.awt.Font/SERIF)
-    (set-stroke (color :black))
+    (set-fill (color :black))
     (draw-string "X" 0 10))
 
   (is-image 10 11 [T T T T T T T T T T
@@ -309,7 +309,7 @@
                    T T T T T T T T T T]
     "text-align-center"
     (set-font java.awt.Font/SERIF)
-    (set-stroke (color :black))
+    (set-fill (color :black))
     (text-align :center)
     (draw-string "XXX" 0 10))
 
@@ -326,7 +326,7 @@
                    T T T T T T T T T T]
     "text-align-center-placement"
     (set-font java.awt.Font/SERIF)
-    (set-stroke (color :black))
+    (set-fill (color :black))
     (text-align :center)
     (draw-string "XX" 0 10))
 
@@ -343,9 +343,48 @@
                    T T T T T T T T T T]
     "text-align-right"
     (set-font java.awt.Font/SERIF)
-    (set-stroke (color :black))
+    (set-fill (color :black))
     (text-align :right)
     (draw-string "WX" 10 10))
+
+  (is-image 30 30 [
+           T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T 
+           T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T 
+           T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T 
+           T T K K K K K K K K K K K T T T T T K K K K K K K K T T T T 
+           T T K K K K K K K K K K K T T T T T K K K K K K K K T T T T 
+           T T T T T K K K K K T T T T T T T T T T T K K T T T T T T T 
+           T T T T T T K K K K K T T T T T T T T T K K T T T T T T T T 
+           T T T T T T T K K K K T T T T T T T T K K K T T T T T T T T 
+           T T T T T T T K K K K K T T T T T T T K K T T T T T T T T T 
+           T T T T T T T T K K K K K T T T T T K K T T T T T T T T T T 
+           T T T T T T T T T K K K K T T T T K K K T T T T T T T T T T 
+           T T T T T T T T T K K K K K T T T K K T T T T T T T T T T T 
+           T T T T T T T T T T K K K K K T K K T T T T T T T T T T T T 
+           T T T T T T T T T T T K K K K K K K T T T T T T T T T T T T 
+           T T T T T T T T T T T K K K K K K T T T T T T T T T T T T T 
+           T T T T T T T T T T T T K K K K K T T T T T T T T T T T T T 
+           T T T T T T T T T T T T T K K K K T T T T T T T T T T T T T 
+           T T T T T T T T T T T T K K K K K K T T T T T T T T T T T T 
+           T T T T T T T T T T T T K K K K K K K T T T T T T T T T T T 
+           T T T T T T T T T T T K K T T K K K K T T T T T T T T T T T 
+           T T T T T T T T T T K K T T T K K K K K T T T T T T T T T T 
+           T T T T T T T T T K K K T T T T K K K K K T T T T T T T T T 
+           T T T T T T T T T K K T T T T T T K K K K T T T T T T T T T 
+           T T T T T T T T K K T T T T T T T K K K K K T T T T T T T T 
+           T T T T T T T K K K T T T T T T T T K K K K K T T T T T T T 
+           T T T T T T T K K T T T T T T T T T T K K K K T T T T T T T 
+           T T T T T T K K T T T T T T T T T T T K K K K K T T T T T T 
+           T T T T T K K K T T T T T T T T T T T T K K K K K T T T T T 
+           T T K K K K K K K K K T T T T T T K K K K K K K K K K T T T 
+           T T T T T T T T T T T T T T T T T T T T T T T T T T T T T T
+           ]
+    "text-glyph"
+    (set-font java.awt.Font/SERIF 36)
+    (text-align :center)
+    (display :stroke :transparent
+             :fill :black
+             (string "X" 15 29)))
 )
 
 (deftest draw-mini-language-test

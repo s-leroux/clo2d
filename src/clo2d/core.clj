@@ -2,6 +2,7 @@
   (:import (java.awt.image BufferedImage)
            (java.awt.geom AffineTransform)
            (java.awt Font)
+           (java.awt.font TextLayout)
            (java.awt Shape)
            (java.awt Graphics2D)
            (java.awt.geom Area)
@@ -138,51 +139,6 @@
   (.clip (:ctx *g2d*) s))
 
 ;;
-;; Text
-;;
-(defn set-font
-  "Set the current font given its name"
-  [ font-name ]
-  (if-let [ ^Font font (Font/decode font-name )]
-    (.setFont (:ctx *g2d*) font)))
-
-(def
-  text-modes
-  {
-    :left   (fn [ ctx str x y ] [x y])
-    :right (fn [ ^Graphics2D ctx ^String str x y ] 
-      (let [ frc (.getFontRenderContext ctx)
-             font (.getFont ctx)
-             bounds (.getStringBounds font str frc)
-             width (.getWidth bounds)]
-        [ (- x (+ 1 width) ) y ])
-    )
-    :center (fn [ ^Graphics2D ctx ^String str x y ] 
-      (let [ frc (.getFontRenderContext ctx)
-             font (.getFont ctx)
-             bounds (.getStringBounds font str frc)
-             width (.getWidth bounds)]
-        [ (- x (/ (+ 1 width) 2)) y ])
-    )
-
-  }
-)
-
-(defn text-align
- "Set the text alignment"
- [ mode ]
- (set! *g2d* (assoc *g2d* :tm (text-modes mode))))
-
-(defn draw-string
-  "Draw the specified string at the given position"
-  [ ^String str bx by ]
-  ( let [ ctx (:ctx *g2d*)
-          tm  (:tm *g2d*)
-          [x y] (tm ctx str bx by) ]
-    (.setColor (:ctx *g2d*) (:sc *g2d*))
-    (.drawString ctx str (float x) (float y) )))
-
-;;
 ;; Graphic primitives
 ;;
 (defn stroke 
@@ -312,4 +268,63 @@
           )
         )))
     p))
+
+;;
+;; Text
+;;
+(defn set-font
+  "Set the current font given its name"
+  ( [ font-name ]
+    (if-let [ ^Font font (Font/decode font-name )]
+      (.setFont (:ctx *g2d*) font)))
+  ( [ font-name font-size ]
+    (if-let [ ^Font font (Font. font-name Font/PLAIN font-size)]
+      (.setFont (:ctx *g2d*) font)))
+)
+
+(def
+  text-modes
+  {
+    :left   (fn [ layout x y ] [x y])
+    :right (fn [ ^TextLayout layout x y ] 
+      (let [ width (.getAdvance layout) ]
+        [ (- x (+ 1 width) ) y ])
+    )
+    :center (fn [ ^TextLayout layout x y ] 
+      (let [ width (.getAdvance layout) ]
+        [ (- x (/ (+ 1 width) 2)) y ])
+    )
+
+  }
+)
+
+(defn text-align
+ "Set the text alignment"
+ [ mode ]
+ (set! *g2d* (assoc *g2d* :tm (text-modes mode))))
+
+(defn string
+  "Create a shape representing the string at the given position.
+  This will not produce quality rendering at small font sizes."
+  [ ^String str bx by ]
+  (let [ ^Graphics2D ctx (:ctx *g2d*)
+         frc (.getFontRenderContext ctx)
+         font (.getFont ctx)
+         layout (TextLayout. str font frc)
+         tm (:tm *g2d*)
+         [x y] (tm layout bx by)
+         shape (.getOutline layout (AffineTransform/getTranslateInstance x y)) ]
+    shape))
+
+(defn draw-string
+  "Draw the specified string at the given position"
+  [ ^String str bx by ]
+  (let [ ^Graphics2D ctx (:ctx *g2d*)
+         frc (.getFontRenderContext ctx)
+         font (.getFont ctx)
+         layout (TextLayout. str font frc)
+         tm (:tm *g2d*)
+         [x y] (tm layout bx by)]
+    (.setColor ctx (:fc *g2d*))
+    (.draw layout ctx x y)))
 
