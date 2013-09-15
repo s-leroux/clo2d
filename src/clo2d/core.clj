@@ -6,6 +6,7 @@
            (java.awt Graphics2D)
            (java.awt.geom Area)
            (java.awt.geom Line2D$Double)
+           (java.awt.geom Ellipse2D$Double)
            (java.awt.geom Rectangle2D$Double)
            (java.awt.geom Path2D$Double)
            (javax.imageio ImageIO)
@@ -244,6 +245,11 @@
   "Create a rectangle of width `w` and height `h` at (x,y)"
   [ x y w h ]
   (Rectangle2D$Double. x y w h))
+
+(defn ellipse
+  "Create an ellipse of width `w` and height `h` at (x,y)"
+  [ x y w h ]
+  (Ellipse2D$Double. x y w h))
 
 (defn csg*
   "Combine one shape/area with all those of a given list"

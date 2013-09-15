@@ -134,6 +134,25 @@
     (display :stroke (color :red)
              :fill (color :black)
              (path :M 0 0 :L 0 0 :C 3 1 3 4 0 4)))
+
+  (is-image 14 14 [T T T T T T T T T T T T T T
+                   T T T T K K K K K K T T T T
+                   T T K K K K K K K K K K T T
+                   T T K K K K K K K K K K T T
+                   T K K K K K K K K K K K K T
+                   T K K K K K K K K K K K K T
+                   T K K K K K K K K K K K K T
+                   T K K K K K K K K K K K K T
+                   T K K K K K K K K K K K K T
+                   T K K K K K K K K K K K K T
+                   T T K K K K K K K K K K T T
+                   T T K K K K K K K K K K T T
+                   T T T T K K K K K K T T T T
+                   T T T T T T T T T T T T T T]
+    "ellipse"
+    (display :stroke :transparent
+             :fill (color :black)
+             (ellipse 0 0 13 13)))
 )
 
 
@@ -233,6 +252,28 @@
     (let [r1 (rectangle 1 1 4 4)
           r2 (rectangle 3 3 4 4)
           path  (xor r1 r2)]
+      (display :stroke :blue 
+               :fill :black
+               path)))
+
+  (is-image 14 14 [T T T T T B B B B T T T T T
+                   T T T B B K K K K B B T T T
+                   T T B K K K K K K K K B T T
+                   T B K K K B B B B K K K B T
+                   T B K K B T T T T B K K B T
+                   B K K B T T T T T T B K K B
+                   B K K B T T T T T T B K K B
+                   B K K B T T T T T T B K K B
+                   B K K B T T T T T T B K K B
+                   T B K K B T T T T B K K B T
+                   T B K K K B B B B K K K B T
+                   T T B K K K K K K K K B T T
+                   T T T B B K K K K B B T T T
+                   T T T T T B B B B T T T T T]
+    "ellipse-hole"
+    (let [e1 (ellipse 0 0 13 13)
+          e2 (ellipse 3 3  7  7)
+          path  (diff e1 e2)]
       (display :stroke :blue 
                :fill :black
                path)))
