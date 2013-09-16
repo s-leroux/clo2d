@@ -31,19 +31,22 @@
     (let [ eqs [[1 2 3 14] ;; roots 1 2 3
                 [5 1 1 10]
                 [3 2 2 13]
-                [1 6 6 31]]]
-      (println (reorder eqs))))
+                [1 6 6 31]]
+           r (reorder eqs) ]
+      (is (= '[[5 1 1 10] ([1 6 6 31] [3 2 2 13] [1 2 3 14])] r))))
 
   (testing "Reduction"
-    (let [[head eqs] [[5 1 1 10] '([1 6 6 31] [3 2 2 13] [1 2 3 14])] ]
-      (println (row-reduce head eqs))))
+    (let [[head eqs] [[5 1 1 10] '([1 6 6 31] [3 2 2 13] [1 2 3 14])] 
+          rr (row-reduce head eqs) ]
+      (is (= '((29/5 29/5 29N) (7/5 7/5 7N) (9/5 14/5 12N)) rr))))
 
   (testing "Pivot"
     (let [ eqs [[1 2 3 14]
                 [5 1 1 10]
                 [3 2 2 13]
-                [1 6 6 31]]]
-      (println (pivot eqs))))
+                [1 6 6 31]] 
+           pivot (pivot eqs) ]
+      (is (= '((0N) (1N 3N) (29/5 29/5 29N) [5 1 1 10]) pivot))))
 
   (testing "Solve"
     (let [ eqs [[1 2 3 14]
