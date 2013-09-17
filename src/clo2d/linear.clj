@@ -69,19 +69,15 @@
   (let [[eq bag] (reorder eqs)]
     (if eq
       (let [ rr (row-reduce eq bag) ]
-        (println "rr" rr)
+        (println "rr" rr (cons eq result))
         (recur rr (cons eq result)))
       result))))
 
 (defn solve
   [ eqs ]
-  (let [p (pivot eqs)
-        [ ck ] (first p)]
-    (when (not (fzero? ck))
-      (println p)
-      (throw "Can't solve"))
+  (let [p (pivot eqs)]
     (loop [ roots '()
-            eqs (rest p) ]
+            eqs p ]
       (let [ eq (first eqs) ]
         (if eq
           (let [ eqs (rest eqs)
