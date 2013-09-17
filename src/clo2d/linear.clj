@@ -4,6 +4,11 @@
 ;;
 ;; utilities
 ;;
+
+(defmacro abs
+ [ x ]
+ `(if (neg? ~x) (- ~x) ~x))
+
 (defmacro product
   [ ^clojure.lang.IFn f a b ]
   `(map #(~f %1 %2) ~a ~b))
@@ -40,7 +45,7 @@
     (let [head (first bag)
           tail (rest bag)]
       (if head
-        (if (> (first head) (first top))
+        (if (> (abs (first head)) (abs (first top)))
           (recur head (cons top result) tail)
           (recur top (cons head result) tail)
         )
@@ -64,6 +69,7 @@
   (let [[eq bag] (reorder eqs)]
     (if eq
       (let [ rr (row-reduce eq bag) ]
+        (println "rr" rr)
         (recur rr (cons eq result)))
       result))))
 
@@ -72,6 +78,7 @@
   (let [p (pivot eqs)
         [ ck ] (first p)]
     (when (not (fzero? ck))
+      (println p)
       (throw "Can't solve"))
     (loop [ roots '()
             eqs (rest p) ]
