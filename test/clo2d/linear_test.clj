@@ -69,14 +69,6 @@
                             #"Inconsistent equations" 
                             (solve eqs)))))
   
-  (testing "Unsolvable"
-    (let [ eqs [[1 0 1 1]
-                [0 1 1 2]
-                [1 1 2 3]] ]
-      (is (thrown-with-msg? IllegalArgumentException 
-                            #"Unsolvable" 
-                            (solve eqs)))))
-  
   (testing "Inconsistent equations"
     (let [ eqs [[1 0 1 2]
                 [0 1 0 1]
@@ -86,6 +78,24 @@
                 [4 0 4 8]] ]
       (is (thrown-with-msg? IllegalArgumentException 
                             #"Inconsistent equations" 
+                            (solve eqs)))))
+  
+  (testing "Unsolvable"
+    (let [ eqs [[1 0 1 1]
+                [0 1 1 2]
+                [1 1 2 3]] ]
+      (is (thrown-with-msg? IllegalArgumentException 
+                            #"Unsolvable" 
+                            (solve eqs)))))
+  
+  (testing "Unsolvable"
+    (let [ eqs [[1 0 1 2]
+                [0 1 0 1]
+                [1 1 1 3]
+                [1 2 1 4]
+                [2 1 2 5]] ]
+      (is (thrown-with-msg? IllegalArgumentException 
+                            #"Unsolvable" 
                             (solve eqs)))))
 
 )

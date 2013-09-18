@@ -81,15 +81,16 @@
   (if (empty? eqs)
     result
     (let [[eq bag] (reorder eqs)]
-        (println "eqbag" eq bag result)
+        ; (println "eqbag" eq bag result)
         (let [ rr (if (seq (rest eq)) (row-reduce eq bag) bag) ]
-          (println "rr" rr (cons eq result))
+          
+          ; (println "rr" rr (cons eq result))
           (recur rr (cons eq result)))))))
 
 (defn solve
   [ eqs ]
   (let [p (pivot eqs)]
-    (println "p" p)
+    ; (println "p" p)
     (loop [ roots '()
             eqs p ]
       (let [ eq (first eqs) ]
