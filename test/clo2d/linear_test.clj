@@ -44,7 +44,7 @@
                 [5 1 1 10]
                 [3 2 2 13]]
            pivot (pivot eqs) ]
-      (is (= '((-7/9 -7/3) (9/5 14/5 12N) [5 1 1 10]) pivot))))
+      (is (= '((0N)(-7/9 -7/3) (9/5 14/5 12N) [5 1 1 10]) pivot))))
 
   (testing "Solve"
     (let [ eqs [[1 2 3 14]
@@ -52,5 +52,41 @@
                 [3 2 2 13]]
            roots (solve eqs)]
       (is (= '(1 2 3) roots))))
+  
+  (testing "Extra consistent eqs"
+    (let [ eqs [[1 0 0 1]
+                [0 1 0 2]
+                [0 0 1 3]
+                [1 1 1 6]
+                [2 2 2 12]] ]
+      (is (= '(1 2 3) (solve eqs)))))
+  
+  (testing "Inconsistent eqs"
+    (let [ eqs [[1 0 1 1]
+                [0 1 0 2]
+                [1 1 1 9]] ]
+      (is (thrown-with-msg? IllegalArgumentException 
+                            #"Inconsistent equations" 
+                            (solve eqs)))))
+  
+  (testing "Unsolvable"
+    (let [ eqs [[1 0 1 1]
+                [0 1 1 2]
+                [1 1 2 3]] ]
+      (is (thrown-with-msg? IllegalArgumentException 
+                            #"Unsolvable" 
+                            (solve eqs)))))
+  
+  (testing "Inconsistent equations"
+    (let [ eqs [[1 0 1 2]
+                [0 1 0 1]
+                [1 0 2 4]
+                [1 1 1 3]
+                [2 0 2 3]
+                [4 0 4 8]] ]
+      (is (thrown-with-msg? IllegalArgumentException 
+                            #"Inconsistent equations" 
+                            (solve eqs)))))
+
 )
 

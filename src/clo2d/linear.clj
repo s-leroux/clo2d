@@ -34,6 +34,14 @@
   ( [ x epsilon] `(fzero? ~x (- ~epsilon) ~epsilon))
   ( [ x -epsilon +epsilon ] `(< ~-epsilon ~x ~+epsilon)))
 
+(defn all
+  "Is the predicate true for all values of a  collection?"
+  ( [ f ] true)
+  ( [ f coll ]
+     (if (seq coll) (if (f (first coll)) (recur f (rest coll))
+                                         false)
+                    true)))
+
 ;;
 ;; Gauss solver
 ;;
@@ -44,7 +52,7 @@
          bag (rest eqs)]
     (let [head (first bag)
           tail (rest bag)]
-      (if head
+      (if (seq head)
         (if (> (abs (first head)) (abs (first top)))
           (recur head (cons top result) tail)
           (recur top (cons head result) tail)
@@ -53,36 +61,50 @@
 
 (defn row-reduce
   [ head eqs ]
-  (let [factor (first head)
-        vec    (rest head)
-        pivot  (fn [eq]
-                 (let [h (first eq) 
-                       t (rest eq)
-                       c (/ h factor)]
-                    (product #(- %2 (* %1 c)) vec t)))]
-    (map pivot eqs)))
+    (let [factor (first head)
+          vec    (rest head)]
+      (if (and vec (empty? eqs))
+          (recur head (list (map (constantly 0) head)))
+          (let [pivot  (if (fzero? factor)
+                         (fn [eq] (map (constantly 0) (rest eq)))
+                         (fn [eq]
+                           (let [h (first eq) 
+                                 t (rest eq)
+                                 c (/ h factor)]
+                             (product #(- %2 (* %1 c)) vec t)))) ]
+            (map pivot eqs)))))
 
 (defn pivot
   ( [ eqs ] (pivot eqs '()))
   (
   [ eqs result ]
-  (let [[eq bag] (reorder eqs)]
-    (if eq
-      (let [ rr (row-reduce eq bag) ]
-        (println "rr" rr (cons eq result))
-        (recur rr (cons eq result)))
-      result))))
+  (if (empty? eqs)
+    result
+    (let [[eq bag] (reorder eqs)]
+        (println "eqbag" eq bag result)
+        (let [ rr (if (seq (rest eq)) (row-reduce eq bag) bag) ]
+          (println "rr" rr (cons eq result))
+          (recur rr (cons eq result)))))))
 
 (defn solve
   [ eqs ]
   (let [p (pivot eqs)]
+    (println "p" p)
     (loop [ roots '()
             eqs p ]
       (let [ eq (first eqs) ]
         (if eq
-          (let [ eqs (rest eqs)
-                 a (first eq)
-                 [s r] (accumulate (rest eq) roots) ]
-            (recur (cons (/ (- r s) a) roots) eqs))
+          (let [ [ head & tail ] eq ]
+              (if (fzero? head)
+                (if tail
+                  (if (all #(fzero? %1) tail )
+                    (throw (IllegalArgumentException. "Unsolvable"))
+                    (throw (IllegalArgumentException. "Inconsistent equations")))
+                  (recur roots (rest eqs)))
+                (if (seq tail) 
+                  (let [ [s r] (accumulate tail roots) ]
+                    (recur (cons (/ (- r s) head ) roots) 
+                           (rest eqs)))
+                  (throw (IllegalArgumentException. "Inconsistent equations")))))
           roots )))))
 
