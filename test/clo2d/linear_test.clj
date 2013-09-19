@@ -100,3 +100,29 @@
 
 )
 
+(deftest map-eq-test
+  (testing "indep"
+    (let [ eqs [ {:x 1 := 1 } 
+                 {:y 1 := 2 }
+                 {:x 1 :y 2 :z 3 := 4 } ]
+           res (indeps eqs) ]
+      (is (= res #{ :x :y :z }))))
+
+  (testing "eq parsing"
+    (let [ eqs [ {:x 1 := 1 } 
+                 {:y 1 := 2 }
+                 {:x 1 :y 2 :z 3 := 4 } ]
+           [keys res] (parse-eq eqs) ]
+      (is (= keys #{:x :y :z}))
+      (is (= res [[3 2 1 4]
+                  [0 1 0 2]
+                  [0 0 1 1]]))))
+
+  (testing "eq solving"
+    (let [ eqs [ {:x 1 := 1 } 
+                 {:y 1 := 2 }
+                 {:x 1 :y 2 :z 3 := 4 } ]
+           res (solve-eq eqs) ]
+      (is (= res {:x 1 :y 2 :z -1/3}))))
+                  
+)

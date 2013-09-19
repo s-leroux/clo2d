@@ -1,5 +1,5 @@
 (ns clo2d.linear
-  (:import ()))
+  (:use clojure.set))
 
 ;;
 ;; utilities
@@ -108,4 +108,29 @@
                            (rest eqs)))
                   (throw (IllegalArgumentException. "Inconsistent equations")))))
           roots )))))
+
+(defn indeps
+  "Parse a collection of equation expressed as a map to
+  collect all independant terms (in fact, keys of the maps)"
+  ([eqs] (indeps eqs #{}))
+  ([eqs result]
+    (if (seq eqs)
+      (recur (rest eqs) (union result (set (keys (first eqs)))))
+      (disj result :=))))
+
+(defn parse-eq
+  [ eqs ]
+  (let [ keys (indeps eqs) ]
+    (loop [ result '()
+            eqs eqs]
+      (if (seq eqs)
+        (let [ eq (first eqs) ]
+          (recur (cons (for [x (concat keys '(:=))] (or (eq x) 0) ) result) (rest eqs)))
+        [keys result]))))
+
+(defn solve-eq
+  [ eqs ]
+  (let [ [keys eqs] (parse-eq eqs)
+         roots (solve eqs)]
+    (zipmap keys roots)))
 

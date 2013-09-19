@@ -1,4 +1,5 @@
 (ns clo2d.core
+  (:use clo2d.linear)
   (:import (java.awt.image BufferedImage)
            (java.awt.geom AffineTransform)
            (java.awt Font)
@@ -201,6 +202,18 @@
   "Create a rectangle of width `w` and height `h` at (x,y)"
   [ x y w h ]
   (Rectangle2D$Double. x y w h))
+
+(defn rectangular
+  "A rectagular geometry build from given constraints"
+  [ & constraints ]
+  ;; contraints are :top :left :bottom :right 
+  ;;                :width :height :center-x :center-y
+  (let [ base [ { :bottom 1 :top -1 :height -1 := 0 } 
+                { :bottom 1 :center-y -1 :height -1/2 := 0 }
+                { :right 1 :left -1 :width -1 := 0 }
+                { :right 1 :center-x -1 :width -1/2 := 0 } ]
+         c    (for [[k v] (apply hash-map constraints)] { k 1 := v }) ]
+     (solve-eq (concat base c))))
 
 (defn ellipse
   "Create an ellipse of width `w` and height `h` at (x,y)"
