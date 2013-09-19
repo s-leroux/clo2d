@@ -118,6 +118,16 @@
                   [0 1 0 2]
                   [0 0 1 1]]))))
 
+  (testing "eq parsing with 0 default"
+    (let [ eqs [ {:x 1 := 0 } 
+                 {:y 1 }
+                 {:x 1 :y 2 :z 3 } ]
+           [keys res] (parse-eq eqs) ]
+      (is (= keys #{:x :y :z}))
+      (is (= res [[3 2 1 0]
+                  [0 1 0 0]
+                  [0 0 1 0]]))))
+
   (testing "eq solving"
     (let [ eqs [ {:x 1 := 1 } 
                  {:y 1 := 2 }

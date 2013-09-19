@@ -59,5 +59,5 @@
         (let [k (first tail) r (rest tail)]
           (if (keyword? k)
             (recur r (cons { k (* sign term) } values) ops 1)
-            (recur tail (cons { := (* sign term)} values) ops 1)))
+            (recur tail (cons { := (* (- sign) term)} values) ops 1)))
       ))))
