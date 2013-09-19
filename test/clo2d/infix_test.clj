@@ -43,9 +43,17 @@
   (testing "parser"
     (let [eq1 [2 :x + 3 :y = 4 ]
           eq2 [2 :x + 3 :y - 4 ]
-          eq3 [2 :x + 3 :y - 4 = 0 ] ]
+          eq3 [2 :x + 3 :y - 4 = 0 ]
+          eq4 [-4 = -2 :x + -3 :y ] ]
       (is (= (parse-infix eq1) {:x 2 :y 3 := 4 }))
       (is (= (parse-infix eq2) {:x 2 :y 3 := 4 }))
-      (is (= (parse-infix eq3) {:x 2 :y 3 := 4 }))))
+      (is (= (parse-infix eq3) {:x 2 :y 3 := 4 }))
+      (is (= (parse-infix eq4) {:x 2 :y 3 := 4 }))))
+
+  (testing "parser"
+    (let [eq1 [2 [ :x + 3 :y - 2 ] ] 
+          eq2 '(2 ( :x + 3 :y - 2)) ]
+      (is (= (parse-infix eq1) {:x 2 :y 6 := 4 }))
+      (is (= (parse-infix eq2) {:x 2 :y 6 := 4 })) ))
 
 )

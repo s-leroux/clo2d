@@ -43,21 +43,27 @@
         (not term)
         (back-eval values ops)
 
-        (#{+,:+} term)
+        (#{+,:+,'+} term)
         (recur (rest terms) values (cons :+ ops) 1)
 
-        (#{-,:-} term)
+        (#{-,:-,'-} term)
         (recur (rest terms) values (cons :+ ops) -1)
 
-        (#{=,:=} term)
+        (#{=,:=,'=} term)
         (recur (rest terms) values (cons := ops) 1)
 
-        (keyword? term)
+        (or (keyword? term) (coll? term))
         (recur (cons sign terms) values ops 1)
 
         (number? term)
         (let [k (first tail) r (rest tail)]
-          (if (keyword? k)
-            (recur r (cons { k (* sign term) } values) ops 1)
+          (cond
+            (keyword? k)
+            (recur r (cons (product { k sign } term) values) ops 1)
+
+            (coll? k)
+            (recur r (cons (product (parse-infix k) term) values) ops 1)
+
+            true
             (recur tail (cons { := (* (- sign) term)} values) ops 1)))
       ))))
