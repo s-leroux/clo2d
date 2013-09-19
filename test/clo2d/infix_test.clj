@@ -7,17 +7,7 @@
 (deftest base-functions-test
   (testing "Product"
     (let [ m {:a 1 :b 2 :c 3} ]
-      (is (= (product m 3) {:a 3 :b 6 :c 9})))))
-
-(deftest stack-test
-  (testing "value+keyword"
-    (let [s '()
-          s (push s {:a 3 })
-
-          [v s] (pop s)]
-      (is (= v {:a 3}))
-      (is (= s '()))))
-)
+      (is (= (m-product m 3) {:a 3 :b 6 :c 9})))))
 
 (deftest infix-parser-test
   (testing "back-eval add"

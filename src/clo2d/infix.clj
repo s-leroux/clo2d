@@ -1,16 +1,7 @@
 (ns clo2d.infix
   (:use clojure.set))
 
-(defn push
-  [stack v]
-  (cons v stack))
-
-(defn pop
-  [stack]
-  (let [[v & tail] stack ]
-    [v (or tail '())]))
-
-(defn product
+(defn m-product
   [ map factor ]
   (let [ks (keys map)]
     (zipmap ks (for [k ks] (* factor (map k))))))
@@ -20,7 +11,7 @@
     (let [op (first ops)
           value (first values)]
       (case op
-        := (recur (cons (product value -1) (rest values)) 
+        := (recur (cons (m-product value -1) (rest values)) 
                   (cons :+ (rest ops)))
         :+ (let [values (rest values)
                  v2 (first values)]
@@ -59,10 +50,10 @@
         (let [k (first tail) r (rest tail)]
           (cond
             (keyword? k)
-            (recur r (cons (product { k sign } term) values) ops 1)
+            (recur r (cons (m-product { k sign } term) values) ops 1)
 
             (coll? k)
-            (recur r (cons (product (parse-infix k) term) values) ops 1)
+            (recur r (cons (m-product (parse-infix k) term) values) ops 1)
 
             true
             (recur tail (cons { := (* (- sign) term)} values) ops 1)))
