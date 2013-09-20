@@ -3,6 +3,15 @@
             [clo2d.shape :refer :all])
   (:import (java.io File)))
 
+(deftest utils-test
+  (testing "Unfolding"
+    (doseq [[in out] [
+              [ :x:y :y ]
+              [ :x   :x ]
+            ]]
+      (is (= (unfold in) out)))
+  ))
+
 (deftest updt-keywords-test
   (testing "Updating keywords"
     (doseq [[in out] [

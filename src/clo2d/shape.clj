@@ -50,4 +50,15 @@
   [ & constraints ]
   `(map parse-infix '~constraints))
 
+(defmacro unfold
+  [ k ]
+  `(let [k# (str ~k)] (keyword (.substring k# (inc (.lastIndexOf k# ":"))))))
 
+(defn rect
+  [ prefix map ]
+  (let [top    (find-keyword (str prefix ":top"))
+        left   (find-keyword (str prefix ":left"))
+        width  (find-keyword (str prefix ":width"))
+        height (find-keyword (str prefix ":height"))
+        args   (reduce #(assoc %1 (unfold %2) (map %2)) {} [top left width height])]
+    args))
