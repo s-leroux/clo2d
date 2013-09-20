@@ -4,12 +4,8 @@
   (:import (java.io File)))
 
 (deftest utils-test
-  (testing "Unfolding"
-    (doseq [[in out] [
-              [ :x:y :y ]
-              [ :x   :x ]
-            ]]
-      (is (= (unfold in) out)))
+  (testing "Folding"
+    (is (= (fold* "x" :y :z) { :x:y :y :x:z :z }))
   ))
 
 (deftest updt-keywords-test
