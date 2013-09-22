@@ -1,5 +1,5 @@
 (ns clo2d.shape
-  (:use clo2d.infix))
+  (:use clo2d.infix clo2d.linear))
 
 (defn updt-keywords
  "Recursivly walk through a collection to prefix keywords by the given
@@ -27,12 +27,15 @@
               x)) ]
    (into {} (for [[k v] map] [(f k) v]))))
 
+(def ^:const point
+  (map parse-infix [ '( :x = :x )
+                     '( :y = :y ) ]))
 
 (def ^:const rectangular
-  (map parse-infix[ '( :bottom - :top = :height ) 
-                    '( 2 ( :bottom - :center-y ) = :height )
-                    '( :right - :left = :width )
-                    '( 2 ( :right - :center-x ) = :width ) ]))
+  (map parse-infix [ '( :bottom - :top = :height ) 
+                     '( 2 ( :bottom - :center-y ) = :height )
+                     '( :right - :left = :width )
+                     '( 2 ( :right - :center-x ) = :width ) ]))
 
 (def ^:const square
   (concat rectangular (map parse-infix [
@@ -44,7 +47,7 @@
 
 (defmacro group
   [ & body ]
-  `(concat ~@body))
+  `(solve-eq (concat ~@body)))
 
 (defmacro having
   [ & constraints ]
@@ -57,8 +60,50 @@
        (recur (assoc map (keyword (str prefix kw)) kw) tail)
        map)))
 
+(defmacro unfold
+  [ k ]
+  `(let [k# (name ~k)
+         idx# (.lastIndexOf k# ":")]
+     [ (keyword (.substring k# 0 idx#))
+       (keyword (.substring k# (inc idx#)))]))
+
+(defn unfold*
+  [ map ]
+  (loop [ result {} iter (seq map) ]
+    (if-let [[key value] (first iter)]
+      (let [[h t] (unfold key)
+            m     (get result h {})]
+        (recur (assoc result h (assoc m t value)) (rest iter)))
+      result)))
+
+(defmacro gget
+  [ prefix map & kw-list ]
+  `(let [kw#     (fold* ~prefix ~@kw-list)]
+     (reduce #(assoc %1 (kw# %2) (~map %2)) {} (keys kw#))))
+
+(defmacro make-xy 
+ [ kw x y ]
+ `[ (keyword (str (name ~kw) (str ~x)))
+    (keyword (str (name ~kw) (str ~y))) ])
+
+(defmacro center
+ [ kw ]
+ `(make-xy ~kw ":x" ":y"))
+
+(defmacro nw
+ [ kw ]
+ `(make-xy ~kw ":left" ":top"))
+
+(defn --
+ [ map & points ]
+ (loop [points points result [] ]
+   (if-let [[p & tail] points]
+     (if (keyword? p)
+       (recur (cons (center p) tail) result)
+       (let [[x y] p]
+         (recur tail (conj result (map x) (map y)))))
+   result)))
+
 (defn rect
   [ prefix map ]
-  (let [kw     (fold* prefix :top :left :width :height)
-        args   (reduce #(assoc %1 (kw %2) (map %2)) {} (keys kw))]
-    args))
+  (gget prefix map :top :left :width :height))
