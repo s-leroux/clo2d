@@ -24,7 +24,7 @@
 (defn parse-infix
   "Parse an infix (linear) equation"
   [ eq ]
-  (loop [ terms eq
+  (loop [ terms (cons 0 (cons + eq)) ; force constant term in equation
           values '()
           ops '() 
           sign 1 ]
