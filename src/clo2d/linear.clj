@@ -13,6 +13,59 @@
   [ ^clojure.lang.IFn f a b ]
   `(map #(~f %1 %2) ~a ~b))
 
+(defmacro mp-product
+  [ ^clojure.lang.IFn f a b ]
+  `(reduce (fn [ map# [ k# v# ] ]
+              (assoc map# k# (~f (get map# k# 0) v#)))
+      ~a ~b))
+
+(defmacro mp-eval
+  [ eq ctx ]
+  `(reduce (fn [ map# [ k# v# ] ]
+             (println map# k# v#)
+             (if-let [ r# (~ctx k#) ]
+               (assoc map# := (- (get map# := 0) (* v# r#)))
+               (assoc map# k# (if (= k# :=) (+ (get map# := 0) v#) v#))))
+        {} ~eq))
+
+(defmacro mp-resolve
+  [ eq ]
+  `(let [ cst# (get ~eq := 0)
+          m# (dissoc ~eq :=) ]
+     (println "rs" ~eq)
+     (case (count m#)
+       0 (if (fzero? cst#) 
+             [true {}] 
+             (throw (IllegalArgumentException.  "Inconsistent equations")))
+       1 (let [[k# v#] (first m#)]
+           (cond
+             (and (fzero? cst#) (fzero? v#))
+             [true {}]
+             
+             (fzero? v#)
+             (throw (IllegalArgumentException.  "Inconsistent equations"))
+
+             :default
+             [true {k# (/ cst# v#)}])
+         )
+
+       [false (reduce (fn [map# [k# v#]] (assoc map# k# nil)) {} m#)]
+     ))) 
+
+(defn a-key
+  "Returns a non-zero key from a set of maps rejecting :=."
+  [ maps ]
+  (let [eq    (first maps)
+        [k _] (first eq)]
+    (cond
+      (nil? eq) nil
+      (nil? k)  (recur (rest maps))
+      (= k :=)  (recur (cons (rest eq) (rest maps)))
+      :default  k
+    )))
+
+
+
 (defn accumulate
   "Given a vector and the first root values
   returns the sum v(i)*r(i) and any unused v(j) terms"
@@ -134,3 +187,95 @@
          roots (solve eqs)]
     (zipmap keys roots)))
 
+;;
+;; New map based Gauss linear equation solver
+;;
+(defn mp-reorder 
+  "Find the equation having the greatest factor for key `k`"
+  [ k eqs ]
+  (loop [top (first eqs)
+         result []
+         bag (rest eqs)]
+    (let [head (first bag) ;; should use if-let ???
+          tail (rest bag)]
+      (if (seq head)
+        (if (> (abs (get head k 0)) (abs (get top k 0)))
+          (recur head (cons top result) tail)
+          (recur top (cons head result) tail)
+        )
+        [top result]))))
+
+(defn mp-row-reduce
+  "(Try to) eliminated the given key in `eqs` by linear combination with
+  `head`"
+  [ k head eqs ]
+    (let [factor (head k)
+          vec    (dissoc head k)]
+      (if (and vec (empty? eqs))
+          (recur k head (list {:= 0}))
+          (let [pivot  (if (fzero? factor)
+                         (fn [eq] {:= 0})
+                         (fn [eq]
+                           (let [h (get eq k 0) 
+                                 t (dissoc eq k)
+                                 c (/ h factor)]
+                             (mp-product #(- %1 (* %2 c)) t vec)))) ]
+            (map pivot eqs)))))
+
+(defn mp-pivot
+  ( [ eqs ] (mp-pivot eqs {}))
+  (
+  [ eqs result ]
+  (if (empty? eqs)
+    result
+    (let [k (a-key eqs)
+          [eq bag] (mp-reorder k eqs)]
+        ; (println "eqbag" eq bag result)
+        (let [ rr (if (seq (rest eq)) (mp-row-reduce k eq bag) bag) ]
+          
+          (recur rr (cons eq result)))))))
+
+(defn eq-div
+  "Euclidian division of one equation by the other"
+  [terms eq1 eq2]
+  (apply min (map #(/ (get eq1 %1 0) (eq2 %1)) terms)))
+
+(defn eq-*+
+  "fused multiply-add operation on equations.
+  Multiply eq2 by x and add the result to eq1."
+  [eq1 x eq2]
+  (loop [result eq1 eq2 eq2]
+    (if-let[[k v] (first eq2)]
+      (recur (assoc result k (+ (get result k 0) (* x v))) (rest eq2))
+      result)))
+
+(defmacro eq-*-
+  "fused multiply-sub operation on equations."
+  [eq1 x eq2]
+  `(eq-*+ ~eq1 (- ~x) ~eq2))
+
+(defn mp-diff-n
+  "Remove n times `eq` from equations in the `bag`."
+  [bag eq]
+  (let [terms (disj (set (keys eq)) :=)]
+    (map (fn[e] (let [dv (eq-div terms e eq)] (eq-*- e dv eq))) bag)))
+
+(defn mp-solve
+  [ eqs ]
+  (let [p (mp-pivot eqs)]
+    ; (println "p" p)
+    (loop [ roots {}
+            eqs p 
+            unsolved '()]
+      (let [ eq (first eqs) ]
+        (println "eq:" eq)
+        (if eq
+          (let [ s (mp-eval eq roots)
+                 [solved? vals] (mp-resolve s) ]
+            (println "s" s)
+            (recur (merge roots vals)
+                   (rest eqs)
+                   (if solved?
+                       unsolved
+                       (cons s unsolved))))
+        [roots unsolved])))))

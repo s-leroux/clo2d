@@ -136,3 +136,70 @@
       (is (= res {:x 1 :y 2 :z -1/3}))))
                   
 )
+
+;;
+;; New map-based linear solver
+;;
+(deftest map-based-solver-test
+  (testing "Utility mp-product"
+    (is (= (mp-product #(+ %1 %2) {:a 1 :b 2 } { :a 1 :c 1})
+           {:a 2 :b 2 :c 1})))
+
+  (testing "Equation reordering"
+    (let [ eqs [{:x 1 :y 2 :z 3 := 14} ;; roots 1 2 3
+                {:x 5 :y 1 :z 1 := 10}
+                {:x 3 :y 2 :z 2 := 13}]
+           r (mp-reorder :x eqs) ]
+      (is (= '[{:x 5 :y 1 :z 1 := 10} 
+               ({:x 3 :y 2 :z 2 := 13} {:x 1 :y 2 :z 3 := 14})] r))))
+
+  (testing "Reduction"
+    (let [[head eqs] 
+          [{:x 5 :y 1 :z 1 := 10}
+                         '({:x 3 :y 2 :z 2 := 13} {:x 1 :y 2 :z 3 := 14})]
+          rr (mp-row-reduce :x head eqs) ]
+      (is (= '({:y 7/5 :z 7/5 := 7N} {:y 9/5 :z 14/5 := 12N}) rr))))
+
+  (testing "Pivot"
+    (let [ eqs [{:x 1 :y 2 :z 3 := 14} ;; roots 1 2 3
+                {:x 5 :y 1 :z 1 := 10}
+                {:x 3 :y 2 :z 2 := 13}]
+           pivot (mp-pivot eqs) ]
+      (is (= '({:= 0N} 
+               {:x 7/2, := 7/2} 
+               {:y 2/3, :x 7/3, := 11/3} 
+               {:z 3, :y 2, :x 1, := 14}) pivot)))
+
+    (let [ eqs [{:a 1 := 1} {:b 1 := 2}]
+           pivot (mp-pivot eqs) ]
+      (is (= '({:= 0N} 
+               {:b 1, := 2} 
+               {:a 1, := 1}) pivot)))
+  )
+
+  (testing "Solve"
+    (let [ eqs [{:x 1 :y 2 :z 3 := 14} ;; roots 1 2 3
+                {:x 5 :y 1 :z 1 := 10}
+                {:x 3 :y 2 :z 2 := 13}]
+           [roots unsolved] (mp-solve eqs)]
+      (is (= {:x 1 :y 2 :z 3} roots))
+      (is (empty? unsolved))))
+
+  (testing "With unsolvable var"
+    (let [ eqs [{:x 1 :y 2 :z 3 := 14} ;; roots 1 2 3
+                {:x 5 :y 1 :z 1 := 10}
+                {:x 3 :y 2 :z 2 := 13}
+                {:u 1 :v 1 := 0}]
+           [roots unsolved] (mp-solve eqs)]
+      (is (= {:x 1 :y 2 :z 3 :u nil :v nil} roots))
+      (is (= '({:u 1 :v 1 := 0}) unsolved))))
+
+  (testing "With unsolvable var"
+    (let [ eqs [{:x 1 :y 2 :z 3 := 14} ;; roots 1 2 3
+                {:x 5 :y 1 :z 1 := 10}
+                {:x 3 :y 2 :z 2 := 13}
+                {:x 9 :u 1 :v 1 := 0}]
+           [roots unsolved] (mp-solve eqs)]
+      (is (= {:x 1 :y 2 :z 3 :u nil :v nil} roots))
+      (is (= '({:u 1 :v 1 := 0}) unsolved))))
+)
