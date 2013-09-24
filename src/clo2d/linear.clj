@@ -5,6 +5,23 @@
 ;; utilities
 ;;
 
+(def ^:const +epsilon 1e-5)
+(def ^:const -epsilon (- +epsilon))
+
+(defmacro fzero?
+  "Test if a number is close to zero"
+  ( [ x ] `(fzero? ~x -epsilon +epsilon))
+  ( [ x epsilon] `(fzero? ~x (- ~epsilon) ~epsilon))
+  ( [ x -epsilon +epsilon ] `(< ~-epsilon ~x ~+epsilon)))
+
+(defn all
+  "Is the predicate true for all values of a  collection?"
+  ( [ f ] true)
+  ( [ f coll ]
+     (if (seq coll) (if (f (first coll)) (recur f (rest coll))
+                                         false)
+                    true)))
+
 (defmacro abs
  [ x ]
  `(if (neg? ~x) (- ~x) ~x))
@@ -16,13 +33,14 @@
 (defmacro mp-product
   [ ^clojure.lang.IFn f a b ]
   `(reduce (fn [ map# [ k# v# ] ]
-              (assoc map# k# (~f (get map# k# 0) v#)))
+              (let [p# (~f (get map# k# 0) v#)]
+                (assoc map# k# p#)))
       ~a ~b))
 
 (defmacro mp-eval
   [ eq ctx ]
   `(reduce (fn [ map# [ k# v# ] ]
-             (println map# k# v#)
+             ; (println map# k# v#)
              (if-let [ r# (~ctx k#) ]
                (assoc map# := (- (get map# := 0) (* v# r#)))
                (assoc map# k# (if (= k# :=) (+ (get map# := 0) v#) v#))))
@@ -31,8 +49,8 @@
 (defmacro mp-resolve
   [ eq ]
   `(let [ cst# (get ~eq := 0)
-          m# (dissoc ~eq :=) ]
-     (println "rs" ~eq)
+          m# (dissoc (eq-norm ~eq) :=) ]
+     ; (println "rs" ~eq)
      (case (count m#)
        0 (if (fzero? cst#) 
              [true {}] 
@@ -56,14 +74,52 @@
   "Returns a non-zero key from a set of maps rejecting :=."
   [ maps ]
   (let [eq    (first maps)
-        [k _] (first eq)]
+        [k v] (first eq)]
     (cond
       (nil? eq) nil
       (nil? k)  (recur (rest maps))
-      (= k :=)  (recur (cons (rest eq) (rest maps)))
+      (or (= k :=) (fzero? v))  (recur (cons (rest eq) (rest maps)))
       :default  k
     )))
 
+(defn eq-norm
+  "Normalize equation by keeping only non-zero terms"
+  [ eq ]
+  (loop [ result {} eq eq ]
+    (if-let [[k v] (first eq)]
+      (if (and (fzero? v) (not= k :=))
+        (recur result (rest eq))
+        (recur (assoc result k v) (rest eq)))
+    result)))
+
+(defn eq-div
+  "Euclidian division of one equation by the other"
+  [terms eq1 eq2]
+  (apply min (map #(/ (get eq1 %1 0) (eq2 %1)) terms)))
+
+(defn eq-*+
+  "fused multiply-add operation on equations.
+  Multiply eq2 by x and add the result to eq1."
+  [eq1 x eq2]
+  (loop [result eq1 eq2 eq2]
+    (if-let[[k v] (first eq2)]
+      (recur (assoc result k (+ (get result k 0) (* x v))) (rest eq2))
+      result)))
+
+(defmacro eq-*-
+  "fused multiply-sub operation on equations."
+  [eq1 x eq2]
+  `(eq-*+ ~eq1 (- ~x) ~eq2))
+
+(defn eq-terms
+  "Return all non-null terms from an equation"
+  [ eq ]
+  (loop [ result '() eq eq]
+    (if-let [[k v] (first eq)]
+      (if (or (zero? v) (= k :=))
+        (recur result (rest eq))
+        (recur (cons k result) (rest eq)))
+    result)))
 
 
 (defn accumulate
@@ -77,23 +133,6 @@
         (recur (rest vector) (rest roots) (+ (* vi ri) result))
         (cons result vector)))))
 
-
-(def ^:const +epsilon 1e-5)
-(def ^:const -epsilon (- +epsilon))
-
-(defmacro fzero?
-  "Test if a number is close to zero"
-  ( [ x ] `(fzero? ~x -epsilon +epsilon))
-  ( [ x epsilon] `(fzero? ~x (- ~epsilon) ~epsilon))
-  ( [ x -epsilon +epsilon ] `(< ~-epsilon ~x ~+epsilon)))
-
-(defn all
-  "Is the predicate true for all values of a  collection?"
-  ( [ f ] true)
-  ( [ f coll ]
-     (if (seq coll) (if (f (first coll)) (recur f (rest coll))
-                                         false)
-                    true)))
 
 ;;
 ;; Gauss solver
@@ -209,55 +248,38 @@
   "(Try to) eliminated the given key in `eqs` by linear combination with
   `head`"
   [ k head eqs ]
+  (if k
     (let [factor (head k)
           vec    (dissoc head k)]
       (if (and vec (empty? eqs))
           (recur k head (list {:= 0}))
           (let [pivot  (if (fzero? factor)
-                         (fn [eq] {:= 0})
+                         (fn [eq] {:= 0}) ; XXX should remove that case
                          (fn [eq]
                            (let [h (get eq k 0) 
                                  t (dissoc eq k)
                                  c (/ h factor)]
                              (mp-product #(- %1 (* %2 c)) t vec)))) ]
-            (map pivot eqs)))))
+            (map pivot eqs))))
+    eqs))
 
 (defn mp-pivot
-  ( [ eqs ] (mp-pivot eqs {}))
+  ( [ eqs ] (mp-pivot eqs {})) ; XXX should be a list here?
   (
   [ eqs result ]
   (if (empty? eqs)
     result
     (let [k (a-key eqs)
           [eq bag] (mp-reorder k eqs)]
-        ; (println "eqbag" eq bag result)
+        ; (println "k eq bag result" k eq bag result)
         (let [ rr (if (seq (rest eq)) (mp-row-reduce k eq bag) bag) ]
           
           (recur rr (cons eq result)))))))
 
-(defn eq-div
-  "Euclidian division of one equation by the other"
-  [terms eq1 eq2]
-  (apply min (map #(/ (get eq1 %1 0) (eq2 %1)) terms)))
-
-(defn eq-*+
-  "fused multiply-add operation on equations.
-  Multiply eq2 by x and add the result to eq1."
-  [eq1 x eq2]
-  (loop [result eq1 eq2 eq2]
-    (if-let[[k v] (first eq2)]
-      (recur (assoc result k (+ (get result k 0) (* x v))) (rest eq2))
-      result)))
-
-(defmacro eq-*-
-  "fused multiply-sub operation on equations."
-  [eq1 x eq2]
-  `(eq-*+ ~eq1 (- ~x) ~eq2))
-
 (defn mp-diff-n
   "Remove n times `eq` from equations in the `bag`."
   [bag eq]
-  (let [terms (disj (set (keys eq)) :=)]
+  (let [terms (eq-terms eq)]
     (map (fn[e] (let [dv (eq-div terms e eq)] (eq-*- e dv eq))) bag)))
 
 (defn mp-solve
@@ -267,15 +289,18 @@
     (loop [ roots {}
             eqs p 
             unsolved '()]
+      ; (println eqs unsolved)
       (let [ eq (first eqs) ]
-        (println "eq:" eq)
+        ; (println "eq:" eq)
         (if eq
           (let [ s (mp-eval eq roots)
                  [solved? vals] (mp-resolve s) ]
-            (println "s" s)
-            (recur (merge roots vals)
-                   (rest eqs)
-                   (if solved?
-                       unsolved
-                       (cons s unsolved))))
+            ; (println "s" s)
+            (if solved?
+              (recur (merge roots vals)
+                     (rest eqs)
+                     unsolved)
+              (recur (merge roots vals) ;; ??? if not solved, nothing to merge?
+                     (mp-diff-n (rest eqs) s)
+                     (cons s unsolved))))
         [roots unsolved])))))

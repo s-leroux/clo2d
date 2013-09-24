@@ -185,6 +185,21 @@
       (is (= {:x 1 :y 2 :z 3} roots))
       (is (empty? unsolved))))
 
+  (testing "With zero-only terms"
+    (let [ eqs [{:a 1 :b 1 :c 0 := 2}{:a 1 :b 0 := 1}]
+           [roots unsolved] (mp-solve eqs)]
+      (is (= {:a 1 :b 1} roots))
+      (is (= '() unsolved))))
+
+  (testing "With unsolvable and inconsistent terms"
+    (let [ eqs [{:a 1 :b 1 :c 0 := 2}
+                {:a 1 :b 0 := 1}
+                {:a 1 :c 1 :d 1}
+                {:b 5 :c 1 :d 1}]]
+      (is (thrown-with-msg? IllegalArgumentException
+                            #"Inconsistent equations"
+                            (mp-solve eqs)))))
+
   (testing "With unsolvable var"
     (let [ eqs [{:x 1 :y 2 :z 3 := 14} ;; roots 1 2 3
                 {:x 5 :y 1 :z 1 := 10}
@@ -201,5 +216,5 @@
                 {:x 9 :u 1 :v 1 := 0}]
            [roots unsolved] (mp-solve eqs)]
       (is (= {:x 1 :y 2 :z 3 :u nil :v nil} roots))
-      (is (= '({:u 1 :v 1 := 0}) unsolved))))
+      (is (= '({:= 14/3, :v -14/27, :u -14/27}) unsolved))))
 )
