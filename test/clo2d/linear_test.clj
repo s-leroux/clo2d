@@ -4,13 +4,6 @@
             [clojure.java.io :refer :all])
   (:import (java.io File)))
 
-(deftest accumulate-test
-  (testing "Accumulate"
-    (let [ vec   '(1 2 3 4)
-           roots '(5 6 7)
-           acc   (accumulate vec roots) ]
-      (is (= '(38 4) acc))))) 
-
 (deftest zero?-test
   (testing "fzero?"
     (is (fzero? (/ +epsilon 2)))
@@ -97,15 +90,13 @@
                 {:x 5 :y 1 :z 1 := 10}
                 {:x 3 :y 2 :z 2 := 13}]
            pivot (mp-pivot eqs) ]
-      (is (= '({:= 0N} 
-               {:x 7/2, := 7/2} 
+      (is (= '({:x 7/2, := 7/2} 
                {:y 2/3, :x 7/3, := 11/3} 
                {:z 3, :y 2, :x 1, := 14}) pivot)))
 
     (let [ eqs [{:a 1 := 1} {:b 1 := 2}]
            pivot (mp-pivot eqs) ]
-      (is (= '({:= 0N} 
-               {:b 1, := 2} 
+      (is (= '({:b 1, := 2} 
                {:a 1, := 1}) pivot)))
   )
 
@@ -139,7 +130,7 @@
                 {:u 1 :v 1 := 0}]
            [roots unsolved] (mp-solve eqs)]
       (is (= {:x 1 :y 2 :z 3 :u nil :v nil} roots))
-      (is (= '({:u 1 :v 1 := 0}) unsolved))))
+      (is (= '({:u 1 :v 1}) unsolved))))
 
   (testing "With unsolvable var"
     (let [ eqs [{:x 1 :y 2 :z 3 := 14} ;; roots 1 2 3

@@ -91,20 +91,35 @@
         :default   (recur (assoc result k v) (rest eq)))
     result)))
 
+(defn eq-terms
+  "Return all non-null terms from an equation"
+  [ eq ]
+  (loop [ result '() eq eq]
+    (if-let [[k v] (first eq)]
+      (if (or (zero? v) (= k :=))
+        (recur result (rest eq))
+        (recur (cons k result) (rest eq)))
+    result)))
+
 (defn eq-div
   "Euclidian division of one equation by the other"
-  ( [eq1 eq2] (eq-div (keys eq2) eq1 eq2) )
+  ( [eq1 eq2] (eq-div (eq-terms eq2) eq1 eq2) )
   ( [terms eq1 eq2]
   (apply min (map #(/ (get eq1 %1 0) (eq2 %1)) terms)))
   )
 
 (defn eq-madd
   "fused multiply-add operation on equations.
-  Multiply eq2 by x and add the result to eq1."
+  Multiply eq2 by x and add the result to eq1. 
+  Returns a normalized eq."
   [eq1 x eq2]
   (loop [result eq1 eq2 eq2]
     (if-let[[k v] (first eq2)]
-      (recur (assoc result k (+ (get result k 0) (* x v))) (rest eq2))
+      (let [new-val (+ (get result k 0) (* x v))]
+        (if (fzero? new-val)
+          (recur (dissoc result k) (rest eq2))
+          (recur (assoc result k new-val) (rest eq2))
+        ))
       result)))
 
 (defmacro eq-msub
@@ -127,27 +142,13 @@
   [eq1 x]
   `(eq-madd ~eq1 (dec ~x) ~eq1))
 
-(defn eq-terms
-  "Return all non-null terms from an equation"
-  [ eq ]
-  (loop [ result '() eq eq]
-    (if-let [[k v] (first eq)]
-      (if (or (zero? v) (= k :=))
-        (recur result (rest eq))
-        (recur (cons k result) (rest eq)))
-    result)))
-
-
-(defn accumulate
-  "Given a vector and the first root values
-  returns the sum v(i)*r(i) and any unused v(j) terms"
-  ( [ vector roots ] (accumulate vector roots 0))
-  ( [ vector roots result ]
-    (let [vi (first vector)
-          ri (first roots)]
-      (if ri
-        (recur (rest vector) (rest roots) (+ (* vi ri) result))
-        (cons result vector)))))
+(defn eq-eliminate
+ "Eliminate the given key (only one) from `eq1` by linear 
+ combination with `eq2`"
+ [ k eq1 eq2 ]
+ (let [c1 (get eq1 k 0)
+       c2 (get eq2 k 0)]
+    (eq-msub eq1 (/ c1 c2) eq2)))
 
 
 ;;
@@ -173,18 +174,7 @@
   `head`"
   [ k head eqs ]
   (if k
-    (let [factor (head k)
-          vec    (dissoc head k)]
-      (if (and vec (empty? eqs))
-          (recur k head (list {:= 0}))
-          (let [pivot  (if (fzero? factor)
-                         (fn [eq] {:= 0}) ; XXX should remove that case
-                         (fn [eq]
-                           (let [h (get eq k 0) 
-                                 t (dissoc eq k)
-                                 c (/ h factor)]
-                             (mp-product #(- %1 (* %2 c)) t vec)))) ]
-            (map pivot eqs))))
+    (map #(eq-eliminate k %1 head) eqs)
     eqs))
 
 (defn mp-pivot
