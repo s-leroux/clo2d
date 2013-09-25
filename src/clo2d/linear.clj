@@ -26,10 +26,6 @@
  [ x ]
  `(if (neg? ~x) (- ~x) ~x))
 
-(defmacro product
-  [ ^clojure.lang.IFn f a b ]
-  `(map #(~f %1 %2) ~a ~b))
-
 (defmacro mp-product
   [ ^clojure.lang.IFn f a b ]
   `(reduce (fn [ map# [ k# v# ] ]
@@ -82,22 +78,33 @@
       :default  k
     )))
 
-(defn eq-norm
-  "Normalize equation by keeping only non-zero terms"
+(defn eq-norm*
+  "Normalize equation by keeping only non-zero terms. Return
+  the normalized map and the constant term separately"
   [ eq ]
-  (loop [ result {} eq eq ]
+  (loop [ result {} eq eq cst 0]
     (if-let [[k v] (first eq)]
-      (if (and (fzero? v) (not= k :=))
-        (recur result (rest eq))
-        (recur (assoc result k v) (rest eq)))
-    result)))
+      (cond
+        (= := k)   (recur result (rest eq) v)
+        (fzero? v) (recur result (rest eq) cst)
+        :default   (recur (assoc result k v) (rest eq) cst))
+    [result cst])))
+
+(defmacro eq-norm
+  "Normalize equation by keeping only non-zero terms. Add
+  constant term (:= 0) if not present"
+  [ eq ]
+  `(let [[terms# cst#] (eq-norm* ~eq)]
+     (assoc terms# := cst#)))
 
 (defn eq-div
   "Euclidian division of one equation by the other"
-  [terms eq1 eq2]
+  ( [eq1 eq2] (eq-div (keys eq2) eq1 eq2) )
+  ( [terms eq1 eq2]
   (apply min (map #(/ (get eq1 %1 0) (eq2 %1)) terms)))
+  )
 
-(defn eq-*+
+(defn eq-madd
   "fused multiply-add operation on equations.
   Multiply eq2 by x and add the result to eq1."
   [eq1 x eq2]
@@ -106,10 +113,25 @@
       (recur (assoc result k (+ (get result k 0) (* x v))) (rest eq2))
       result)))
 
-(defmacro eq-*-
+(defmacro eq-msub
   "fused multiply-sub operation on equations."
   [eq1 x eq2]
-  `(eq-*+ ~eq1 (- ~x) ~eq2))
+  `(eq-madd ~eq1 (- ~x) ~eq2))
+
+(defmacro eq-add
+  "Add operation on equations."
+  [eq1 eq2]
+  `(eq-madd ~eq1 1 ~eq2))
+
+(defmacro eq-sub
+  "Sub operation on equations."
+  [eq1 eq2]
+  `(eq-madd ~eq1 -1 ~eq2))
+
+(defmacro eq-mul
+  "Multiply an equation by a constant."
+  [eq1 x]
+  `(eq-madd ~eq1 (dec ~x) ~eq1))
 
 (defn eq-terms
   "Return all non-null terms from an equation"
@@ -133,98 +155,6 @@
         (recur (rest vector) (rest roots) (+ (* vi ri) result))
         (cons result vector)))))
 
-
-;;
-;; Gauss solver
-;;
-(defn reorder 
-  [ eqs ]
-  (loop [top (first eqs)
-         result []
-         bag (rest eqs)]
-    (let [head (first bag)
-          tail (rest bag)]
-      (if (seq head)
-        (if (> (abs (first head)) (abs (first top)))
-          (recur head (cons top result) tail)
-          (recur top (cons head result) tail)
-        )
-        [top result]))))
-
-(defn row-reduce
-  [ head eqs ]
-    (let [factor (first head)
-          vec    (rest head)]
-      (if (and vec (empty? eqs))
-          (recur head (list (map (constantly 0) head)))
-          (let [pivot  (if (fzero? factor)
-                         (fn [eq] (map (constantly 0) (rest eq)))
-                         (fn [eq]
-                           (let [h (first eq) 
-                                 t (rest eq)
-                                 c (/ h factor)]
-                             (product #(- %2 (* %1 c)) vec t)))) ]
-            (map pivot eqs)))))
-
-(defn pivot
-  ( [ eqs ] (pivot eqs '()))
-  (
-  [ eqs result ]
-  (if (empty? eqs)
-    result
-    (let [[eq bag] (reorder eqs)]
-        ; (println "eqbag" eq bag result)
-        (let [ rr (if (seq (rest eq)) (row-reduce eq bag) bag) ]
-          
-          ; (println "rr" rr (cons eq result))
-          (recur rr (cons eq result)))))))
-
-(defn solve
-  [ eqs ]
-  (let [p (pivot eqs)]
-    ; (println "p" p)
-    (loop [ roots '()
-            eqs p ]
-      (let [ eq (first eqs) ]
-        (if eq
-          (let [ [ head & tail ] eq ]
-              (if (fzero? head)
-                (if tail
-                  (if (all #(fzero? %1) tail )
-                    (throw (IllegalArgumentException. "Unsolvable"))
-                    (throw (IllegalArgumentException. "Inconsistent equations")))
-                  (recur roots (rest eqs)))
-                (if (seq tail) 
-                  (let [ [s r] (accumulate tail roots) ]
-                    (recur (cons (/ (- r s) head ) roots) 
-                           (rest eqs)))
-                  (throw (IllegalArgumentException. "Inconsistent equations")))))
-          roots )))))
-
-(defn indeps
-  "Parse a collection of equation expressed as a map to
-  collect all independant terms (in fact, keys of the maps)"
-  ([eqs] (indeps eqs #{}))
-  ([eqs result]
-    (if (seq eqs)
-      (recur (rest eqs) (union result (set (keys (first eqs)))))
-      (disj result :=))))
-
-(defn parse-eq
-  [ eqs ]
-  (let [ keys (indeps eqs) ]
-    (loop [ result '()
-            eqs eqs]
-      (if (seq eqs)
-        (let [ eq (first eqs) ]
-          (recur (cons (for [x (concat keys '(:=))] (or (eq x) 0) ) result) (rest eqs)))
-        [keys result]))))
-
-(defn solve-eq
-  [ eqs ]
-  (let [ [keys eqs] (parse-eq eqs)
-         roots (solve eqs)]
-    (zipmap keys roots)))
 
 ;;
 ;; New map based Gauss linear equation solver
@@ -280,7 +210,7 @@
   "Remove n times `eq` from equations in the `bag`."
   [bag eq]
   (let [terms (eq-terms eq)]
-    (map (fn[e] (let [dv (eq-div terms e eq)] (eq-*- e dv eq))) bag)))
+    (map (fn[e] (let [dv (eq-div terms e eq)] (eq-msub e dv eq))) bag)))
 
 (defn mp-solve
   [ eqs ]
