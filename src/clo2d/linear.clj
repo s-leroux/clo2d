@@ -33,15 +33,6 @@
                 (assoc map# k# p#)))
       ~a ~b))
 
-(defmacro mp-eval
-  [ eq ctx ]
-  `(reduce (fn [ map# [ k# v# ] ]
-             ; (println map# k# v#)
-             (if-let [ r# (~ctx k#) ]
-               (assoc map# := (- (get map# := 0) (* v# r#)))
-               (assoc map# k# (if (= k# :=) (+ (get map# := 0) v#) v#))))
-        {} ~eq))
-
 (defmacro mp-resolve
   [ eq ]
   `(let [[m# cst#] (eq-norm* ~eq) ]
@@ -150,6 +141,25 @@
        c2 (get eq2 k 0)]
     (eq-msub eq1 (/ c1 c2) eq2)))
 
+(defn eq-eval
+  "Evaluate (''reduce'') an equation in the given context (''term
+  bindings''). Return a normalized eq."
+  [ eq ctx ]
+  (loop [ result {} 
+          cst 0 
+          [head & tail] (seq eq) ]
+    (if-let [[k v] head]
+      (if (= := k) 
+        (recur result (+ cst v) tail)
+        (if-let [ r (ctx k) ]
+          (recur result (- cst (* r v)) tail)
+          (recur (if (fzero? v) result (assoc result k v)) cst tail)
+        )
+      )
+      (if (fzero? cst) result (assoc result := cst))
+    )
+  )
+)
 
 ;;
 ;; New map based Gauss linear equation solver
@@ -207,7 +217,7 @@
       (let [ eq (first eqs) ]
         ; (println "eq:" eq)
         (if eq
-          (let [ s (mp-eval eq roots)
+          (let [ s (eq-eval eq roots)
                  [solved? vals] (mp-resolve s) ]
             ; (println "s" s)
             (if solved?

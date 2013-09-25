@@ -40,12 +40,39 @@
           expected {:x  9 :y  2 :z 10 :=  3 }]
       (is (= (eq-madd eq1 x eq2) expected))))
 
+  (testing "Fused multiply-add returning *normalized* eq"
+    (let [eq1      {:x -2 :y -2       := -6 }
+          x        2
+          eq2      {:x  1       :z  4 :=  3 }
+          expected {      :y -2 :z  8       }]
+      (is (= (eq-madd eq1 x eq2) expected))))
+
   (testing "Fused multiply-sub equations"
     (let [eq1      {:x  1 :y  2       :=  3 }
           x        2
           eq2      {:x  4       :z  5 }
           expected {:x -7 :y  2 :z -10 :=  3 }]
       (is (= (eq-msub eq1 x eq2) expected))))
+
+  (testing "Fused multiply-sub returning *normalized* eq"
+    (let [eq1      {:x  2 :y  2       :=  6 }
+          x        2
+          eq2      {:x  1       :z  4 :=  3 }
+          expected {      :y  2 :z -8       }]
+      (is (= (eq-msub eq1 x eq2) expected))))
+)
+
+(deftest eq-eval-test
+  (testing "Evaluation with normalization"
+    (doseq[[in out] [[{}                          {}]
+                     [{:a 1 := 1}                 {}]
+                     [{:a 1 :u 1 := 1}            {:u 1}]
+                     [{:a 1}                      {:= -1}]
+                     [{:a 0 :u 1 := 0}            {:u 1}]] ]
+      (let [ctx { :a 1 :b 2 :c 3 }]
+        (is (= (eq-eval in ctx) out)))
+    )
+  )
 )
 
 (deftest eq-norm-test
