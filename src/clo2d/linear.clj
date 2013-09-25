@@ -178,7 +178,7 @@
     eqs))
 
 (defn mp-pivot
-  ( [ eqs ] (mp-pivot eqs {})) ; XXX should be a list here?
+  ( [ eqs ] (mp-pivot eqs '()))
   (
   [ eqs result ]
   (if (empty? eqs)
