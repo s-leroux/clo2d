@@ -55,6 +55,20 @@
       (is (= (eq-msub eq1 x eq2) expected))))
 )
 
+(deftest eq-norm-test
+  "Normalized equations have all non-zero terms removed (incl. the
+  constant term)"
+  (testing "Equation normalization"
+    (doseq[[in out] [[{}                          {}]
+                     [{:= 0}                      {}]
+                     [{:= 1}                      {:= 1}]
+                     [{:x 0}                      {}]
+                     [{:x 1}                      {:x 1}]
+                     [{:x 1 :y 2 := 3}            {:x 1 :y 2 := 3}]
+                     [{:x 0 :y 1 := 2}            {:y 1 := 2}]]]
+      (is (= (eq-norm in) out))))
+)
+
 ;;
 ;; New map-based linear solver
 ;;

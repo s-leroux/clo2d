@@ -44,24 +44,15 @@
 
 (defmacro mp-resolve
   [ eq ]
-  `(let [ cst# (get ~eq := 0)
-          m# (dissoc (eq-norm ~eq) :=) ]
+  `(let [[m# cst#] (eq-norm* ~eq) ]
      ; (println "rs" ~eq)
      (case (count m#)
        0 (if (fzero? cst#) 
              [true {}] 
              (throw (IllegalArgumentException.  "Inconsistent equations")))
        1 (let [[k# v#] (first m#)]
-           (cond
-             (and (fzero? cst#) (fzero? v#))
-             [true {}]
-             
-             (fzero? v#)
-             (throw (IllegalArgumentException.  "Inconsistent equations"))
-
-             :default
-             [true {k# (/ cst# v#)}])
-         )
+           ;; v# can't be zero for normalized equations
+           [true {k# (/ cst# v#)}])
 
        [false (reduce (fn [map# [k# v#]] (assoc map# k# nil)) {} m#)]
      ))) 
@@ -79,8 +70,8 @@
     )))
 
 (defn eq-norm*
-  "Normalize equation by keeping only non-zero terms. Return
-  the normalized map and the constant term separately"
+  "Normalize equation by keeping only non-zero terms.
+  Constant term is returned separately."
   [ eq ]
   (loop [ result {} eq eq cst 0]
     (if-let [[k v] (first eq)]
@@ -90,12 +81,15 @@
         :default   (recur (assoc result k v) (rest eq) cst))
     [result cst])))
 
-(defmacro eq-norm
-  "Normalize equation by keeping only non-zero terms. Add
-  constant term (:= 0) if not present"
+(defn eq-norm
+  "Normalize equation by keeping only non-zero terms."
   [ eq ]
-  `(let [[terms# cst#] (eq-norm* ~eq)]
-     (assoc terms# := cst#)))
+  (loop [ result {} eq eq]
+    (if-let [[k v] (first eq)]
+      (cond
+        (fzero? v) (recur result (rest eq))
+        :default   (recur (assoc result k v) (rest eq)))
+    result)))
 
 (defn eq-div
   "Euclidian division of one equation by the other"
