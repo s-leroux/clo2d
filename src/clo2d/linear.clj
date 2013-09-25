@@ -214,7 +214,7 @@
               (recur (merge roots vals)
                      (rest eqs)
                      unsolved)
-              (recur (merge roots vals) ;; ??? if not solved, nothing to merge?
+              (recur roots
                      (mp-diff-n (rest eqs) s)
                      (cons s unsolved))))
         [roots unsolved])))))

@@ -129,7 +129,7 @@
                 {:x 3 :y 2 :z 2 := 13}
                 {:u 1 :v 1 := 0}]
            [roots unsolved] (mp-solve eqs)]
-      (is (= {:x 1 :y 2 :z 3 :u nil :v nil} roots))
+      (is (= {:x 1 :y 2 :z 3} roots))
       (is (= '({:u 1 :v 1}) unsolved))))
 
   (testing "With unsolvable var"
@@ -138,6 +138,6 @@
                 {:x 3 :y 2 :z 2 := 13}
                 {:x 9 :u 1 :v 1 := 0}]
            [roots unsolved] (mp-solve eqs)]
-      (is (= {:x 1 :y 2 :z 3 :u nil :v nil} roots))
+      (is (= {:x 1 :y 2 :z 3} roots))
       (is (= '({:= 14/3, :v -14/27, :u -14/27}) unsolved))))
 )
