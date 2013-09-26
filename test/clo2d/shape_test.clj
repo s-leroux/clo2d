@@ -42,3 +42,19 @@
                             (:x:height = 20))) ]
       (is (= (second g) '()))
       (is (= (-- (first g) (nw :x) :p1) [ 50 50 120 50])))))
+
+(deftest accessors-test
+  (testing "Geometric accessors"
+    (is (= (nw :shape)       [:shape:left :shape:top ]))
+    (is (= (n :shape)        [:shape:x :shape:top ]))
+    (is (= (ne :shape)       [:shape:right :shape:top ]))
+    (is (= (w :shape)        [:shape:left :shape:y ]))
+    (is (= (center :shape)   [:shape:x :shape:y ]))
+    (is (= (e :shape)        [:shape:right :shape:y ]))
+    (is (= (sw :shape)       [:shape:left :shape:bottom ]))
+    (is (= (s :shape)        [:shape:x :shape:bottom ]))
+    (is (= (se :shape)       [:shape:right :shape:bottom ]))
+
+    (is (= (size :shape)     [:shape:width :shape:height ]))
+  )
+)

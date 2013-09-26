@@ -33,9 +33,9 @@
 
 (def ^:const rectangular
   (map parse-infix [ '( :bottom - :top = :height ) 
-                     '( 2 ( :bottom - :center-y ) = :height )
+                     '( 2 ( :bottom - :y ) = :height )
                      '( :right - :left = :width )
-                     '( 2 ( :right - :center-x ) = :width ) ]))
+                     '( 2 ( :right - :x ) = :width ) ]))
 
 (def ^:const square
   (concat rectangular (map parse-infix [
@@ -81,18 +81,54 @@
   `(let [kw#     (fold* ~prefix ~@kw-list)]
      (reduce #(assoc %1 (kw# %2) (~map %2)) {} (keys kw#))))
 
-(defmacro make-xy 
+(defmacro make-pair 
  [ kw x y ]
  `[ (keyword (str (name ~kw) (str ~x)))
     (keyword (str (name ~kw) (str ~y))) ])
 
 (defmacro center
  [ kw ]
- `(make-xy ~kw ":x" ":y"))
+ `(make-pair ~kw ":x" ":y"))
 
 (defmacro nw
  [ kw ]
- `(make-xy ~kw ":left" ":top"))
+ `(make-pair ~kw ":left" ":top"))
+
+(defmacro n
+ [ kw ]
+ `(make-pair ~kw ":x" ":top"))
+
+(defmacro ne
+ [ kw ]
+ `(make-pair ~kw ":right" ":top"))
+
+(defmacro w
+ [ kw ]
+ `(make-pair ~kw ":left" ":y"))
+
+(defmacro center
+ [ kw ]
+ `(make-pair ~kw ":x" ":y"))
+
+(defmacro e
+ [ kw ]
+ `(make-pair ~kw ":right" ":y"))
+
+(defmacro sw
+ [ kw ]
+ `(make-pair ~kw ":left" ":bottom"))
+
+(defmacro s
+ [ kw ]
+ `(make-pair ~kw ":x" ":bottom"))
+
+(defmacro se
+ [ kw ]
+ `(make-pair ~kw ":right" ":bottom"))
+
+(defmacro size
+ [ kw ]
+ `(make-pair ~kw ":width" ":height"))
 
 (defn --
  [ map & points ]
