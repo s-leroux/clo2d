@@ -22,7 +22,7 @@
 
 
 (defn parse-infix
-  "Parse an infix (linear) equation"
+  "Parse an infix (linear) equation" ;; XXX should return normalized eq.
   [ eq ]
   (loop [ terms (cons 0 (cons + eq)) ; force constant term in equation
           values '()

@@ -505,6 +505,6 @@
                          '(:height = 20) 
                          '(:left = 10)
                          '(:right = 20)) ]
-      (is (= r { :top 5 :height 20 :bottom 25 :center-y 15
+      (is (= (first r) { :top 5 :height 20 :bottom 25 :center-y 15
                  :left 10 :width 10 :right 20 :center-x 15 }))))
 )

@@ -47,7 +47,7 @@
 
 (defmacro group
   [ & body ]
-  `(solve-eq (concat ~@body)))
+  `(mp-solve (concat ~@body)))
 
 (defmacro having
   [ & constraints ]

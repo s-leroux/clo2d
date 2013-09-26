@@ -172,12 +172,13 @@
          bag (rest eqs)]
     (let [head (first bag) ;; should use if-let ???
           tail (rest bag)]
-      (if (seq head)
+      (if (nil? head)
+        [top result]
         (if (> (abs (get head k 0)) (abs (get top k 0)))
           (recur head (cons top result) tail)
           (recur top (cons head result) tail)
         )
-        [top result]))))
+      ))))
 
 (defn mp-row-reduce
   "(Try to) eliminated the given key in `eqs` by linear combination with
@@ -197,6 +198,7 @@
           [eq bag] (mp-reorder k eqs)]
         ; (println "k eq bag result" k eq bag result)
         (let [ rr (if (seq (rest eq)) (mp-row-reduce k eq bag) bag) ]
+          ; (println "rr" rr)
           
           (recur rr (cons eq result)))))))
 
@@ -208,6 +210,7 @@
 
 (defn mp-solve
   [ eqs ]
+  ; (println "eqs" eqs)
   (let [p (mp-pivot eqs)]
     ; (println "p" p)
     (loop [ roots {}
@@ -219,7 +222,7 @@
         (if eq
           (let [ s (eq-eval eq roots)
                  [solved? vals] (mp-resolve s) ]
-            ; (println "s" s)
+            ; (println "s" s solved? vals)
             (if solved?
               (recur (merge roots vals)
                      (rest eqs)

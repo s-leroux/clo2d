@@ -212,7 +212,7 @@
                 '( 2 ( :bottom - :center-y ) = :height )
                 '( :right - :left = :width )
                 '( 2 ( :right - :center-x ) = :width) ] ]
-     (solve-eq (map parse-infix (concat base constraints)))))
+     (mp-solve (map parse-infix (concat base constraints)))))
 
 (defn ellipse
   "Create an ellipse of width `w` and height `h` at (x,y)"
