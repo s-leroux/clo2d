@@ -82,6 +82,35 @@
         :default   (recur (assoc result k v) (rest eq)))
     result)))
 
+(defn eq-proportional?
+  "Are two equations proportional?"
+  ( [eq1 eq2] 
+    (eq-proportional? (into #{} (concat (keys eq2) (keys eq1))) eq1 eq2)
+  )
+  ( [terms eq1 eq2]
+    (loop [val nil terms terms]
+      (if-let [[k & tail] (seq terms)]
+        (let [v1 (get eq1 k 0)
+              v2 (get eq2 k 0)
+              z1 (fzero? v1)
+              z2 (fzero? v2)]
+          (cond
+            (and z1 z2) (recur val tail)
+            (or z1 z2)  nil
+            (nil? val)  (recur (/ v1 v2) tail)
+
+            :default
+            (let [c (/ v1 v2)]
+              (if (fzero? (- c val))
+                (recur c tail)
+                nil))
+          )
+        )
+        val
+      )
+    )
+))
+
 (defn eq-terms
   "Return all non-null terms from an equation"
   [ eq ]
@@ -208,12 +237,13 @@
   (let [terms (eq-terms eq)]
     (map (fn[e] (let [dv (eq-div terms e eq)] (eq-msub e dv eq))) bag)))
 
-(defn mp-solve
-  [ eqs ]
+(defn mp-solve-in
+  [ [ ctx init ] eqs ]
   ; (println "eqs" eqs)
-  (let [p (mp-pivot eqs)]
+  (let [eqs (map #(eq-eval %1 ctx) (concat init eqs))
+        p (mp-pivot eqs)]
     ; (println "p" p)
-    (loop [ roots {}
+    (loop [ roots ctx
             eqs p 
             unsolved '()]
       ; (println eqs unsolved)
@@ -231,3 +261,7 @@
                      (mp-diff-n (rest eqs) s)
                      (cons s unsolved))))
         [roots unsolved])))))
+
+(defmacro mp-solve
+  [ eqs ]
+  `(mp-solve-in [{}()] ~eqs))

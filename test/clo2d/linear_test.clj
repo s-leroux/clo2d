@@ -60,6 +60,14 @@
           eq2      {:x  1       :z  4 :=  3 }
           expected {      :y  2 :z -8       }]
       (is (= (eq-msub eq1 x eq2) expected))))
+
+  (testing "Proportional?"
+    (doseq [[eq1 eq2 result] [[{} {} nil]
+                              [{:= 6} {:= 2} 3]
+                              [{:a 3 :b 6 := 9} {:a 1 :b 2 := 3} 3]
+                              [{:a 3 :b 6 :e 0 := 9} {:d 0 :a 1 :b 2 := 3} 3]
+                              [{:a 3 :b 6 := 9} {:b 2 := 3} nil]] ]
+      (is (= (eq-proportional? eq1 eq2) result))))
 )
 
 (deftest eq-eval-test
@@ -165,6 +173,6 @@
                 {:x 3 :y 2 :z 2 := 13}
                 {:x 9 :u 1 :v 1 := 0}]
            [roots unsolved] (mp-solve eqs)]
-      (is (= {:x 1 :y 2 :z 3} roots))
-      (is (= '({:= 14/3, :v -14/27, :u -14/27}) unsolved))))
+      (is (= (count unsolved) 1))
+      (is (eq-proportional? '{:= 14/3, :v -14/27, :u -14/27} (first unsolved)))))
 )

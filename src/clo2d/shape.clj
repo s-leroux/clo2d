@@ -48,7 +48,9 @@
 
 (defmacro group
   [ & body ]
-  `(mp-solve (concat ~@body)))
+  (if-let [[head & tail ] (seq body)]
+    `(mp-solve-in (group ~@tail) ~head)
+    `(mp-solve {})))
 
 (defmacro having
   [ & constraints ]
