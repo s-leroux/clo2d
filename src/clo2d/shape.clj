@@ -18,11 +18,12 @@
  "prefix keys from a map by the given string"
  [ prefix map ]
  (let [ ks (keys map) 
+        p-as-str (name prefix)
         f (fn [ x ]
             (or 
               (and (keyword? x) 
                    (not (#{:=,:+,:-} x)) 
-                   (keyword (str prefix ":" (name x))))
+                   (keyword (str p-as-str ":" (name x))))
               (and (coll? x) (updt-keywords prefix x))
               x)) ]
    (into {} (for [[k v] map] [(f k) v]))))

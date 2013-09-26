@@ -16,6 +16,11 @@
               ]]
       (is (= (unfold* in) out)))
   )
+
+  (testing "Prefix map"
+    (is (= (prefix-map "p" {:x 1 :y 2 }) {:p:x 1 :p:y 2}))
+    (is (= (prefix-map :p  {:x 1 :y 2 }) {:p:x 1 :p:y 2}))
+  )
 )
 
 (deftest updt-keywords-test
@@ -34,7 +39,7 @@
 
 (deftest group-test
   (testing "Group creation and manipulation"
-    (let [ g (group (shape "x" square) (shape "p1" point)
+    (let [ g (group (shape :x square) (shape :p1 point)
                     (having (:p1:y = :x:top) 
                             (:p1:x = :x:right + 50 )
                             (:x:top = 50)
