@@ -126,8 +126,8 @@
                 {:x 3 :y 2 :z 2 := 13}]
            pivot (mp-pivot eqs) ]
       (is (= '({:x 7/2, := 7/2} 
-               {:y 2/3, :x 7/3, := 11/3} 
-               {:z 3, :y 2, :x 1, := 14}) pivot)))
+               {:y 2/3, := 4/3} 
+               {:z 3,   := 9}) pivot)))
 
     (let [ eqs [{:a 1 := 1} {:b 1 := 2}]
            pivot (mp-pivot eqs) ]

@@ -43,18 +43,21 @@
                      '( :height = :width ) ])))
 
 (defmacro shape
-  [ name eqs ]
-  `(map #(prefix-map ~name %1) ~eqs))
+  [ name base & eqs ]
+  `(mp-solve 
+     (map #(prefix-map ~name %1) (concat ~base (map parse-infix '~eqs)))))
 
 (defmacro group
   [ & body ]
   (if-let [[head & tail ] (seq body)]
-    `(mp-solve-in (group ~@tail) ~head)
-    `(mp-solve {})))
+    `(let [[ctx#   init#] (group ~@tail)
+           [roots# eqs#]  ~head]
+        (mp-solve-in [(merge ctx# roots#) init#] eqs#))
+    `(mp-solve ())))
 
 (defmacro having
   [ & constraints ]
-  `(map parse-infix '~constraints))
+  `(mp-solve (map parse-infix '~constraints)))
 
 (defn fold*
   [ prefix & kw-list ]

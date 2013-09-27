@@ -227,9 +227,12 @@
           [eq bag] (mp-reorder k eqs)]
         ; (println "k eq bag result" k eq bag result)
         (let [ rr (if (seq (rest eq)) (mp-row-reduce k eq bag) bag) ]
+                 ;;^^^^^^^^^^^^^^^^^^ XXX this is probably false
+                 ;; for map-based eq. representation.
+
           ; (println "rr" rr)
           
-          (recur rr (cons eq result)))))))
+          (recur rr (cons eq (mp-row-reduce k eq result))))))))
 
 (defn mp-diff-n
   "Remove n times `eq` from equations in the `bag`."
