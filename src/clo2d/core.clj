@@ -203,17 +203,6 @@
   [ x y w h ]
   (Rectangle2D$Double. x y w h))
 
-(defn rectangular
-  "A rectagular geometry build from given constraints"
-  [ & constraints ]
-  ;; contraints are :top :left :bottom :right 
-  ;;                :width :height :center-x :center-y
-  (let [ base [ '( :bottom - :top = :height ) 
-                '( 2 ( :bottom - :center-y ) = :height )
-                '( :right - :left = :width )
-                '( 2 ( :right - :center-x ) = :width) ] ]
-     (mp-solve (map parse-infix (concat base constraints)))))
-
 (defn ellipse
   "Create an ellipse of width `w` and height `h` at (x,y)"
   [ x y w h ]

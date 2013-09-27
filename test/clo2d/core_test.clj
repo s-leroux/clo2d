@@ -498,13 +498,3 @@
     (display (rectangle 0 0 2 2)))
     
 )
-    
-(deftest rectagular-shape-test
-  (testing "rectangular constraints"
-    (let [r (rectangular '(:top = 5) 
-                         '(:height = 20) 
-                         '(:left = 10)
-                         '(:right = 20)) ]
-      (is (= (first r) { :top 5 :height 20 :bottom 25 :center-y 15
-                 :left 10 :width 10 :right 20 :center-x 15 }))))
-)

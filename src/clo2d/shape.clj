@@ -83,14 +83,8 @@
       result)))
 
 (defmacro make-pair 
- ([ kw x y ]
-   `[ (keyword (str (name ~kw) (str ~x)))
-      (keyword (str (name ~kw) (str ~y))) ])
- ([ kw x y u v ]
-   `[ (keyword (str (name ~kw) (str ~x)))
-      (keyword (str (name ~kw) (str ~y)))
-      (keyword (str (name ~kw) (str ~u)))
-      (keyword (str (name ~kw) (str ~v))) ])
+ [ kw & fields ]
+   (into [] (map (fn[fld] `(keyword (str (name ~kw) (str ~fld)))) fields))
 )
 
 (defmacro center
@@ -150,3 +144,6 @@
        (recur tail (reduce #(conj %1 (cst %2)) result p)))
    result)))
 
+(defmacro with
+ [ eq-system f & points ]
+ `(apply ~f (-- ~eq-system ~@points)))
