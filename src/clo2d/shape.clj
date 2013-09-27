@@ -82,15 +82,16 @@
         (recur (assoc result h (assoc m t value)) (rest iter)))
       result)))
 
-(defmacro gget
-  [ prefix map & kw-list ]
-  `(let [kw#     (fold* ~prefix ~@kw-list)]
-     (reduce #(assoc %1 (kw# %2) (~map %2)) {} (keys kw#))))
-
 (defmacro make-pair 
- [ kw x y ]
- `[ (keyword (str (name ~kw) (str ~x)))
-    (keyword (str (name ~kw) (str ~y))) ])
+ ([ kw x y ]
+   `[ (keyword (str (name ~kw) (str ~x)))
+      (keyword (str (name ~kw) (str ~y))) ])
+ ([ kw x y u v ]
+   `[ (keyword (str (name ~kw) (str ~x)))
+      (keyword (str (name ~kw) (str ~y)))
+      (keyword (str (name ~kw) (str ~u)))
+      (keyword (str (name ~kw) (str ~v))) ])
+)
 
 (defmacro center
  [ kw ]
@@ -136,16 +137,16 @@
  [ kw ]
  `(make-pair ~kw ":width" ":height"))
 
+(defmacro bounds
+ [ kw ]
+ `(make-pair ~kw ":left" ":top" ":width" ":height"))
+
 (defn --
- [ map & points ]
+ [ [cst eqs] & points ]
  (loop [points points result [] ]
    (if-let [[p & tail] points]
      (if (keyword? p)
        (recur (cons (center p) tail) result)
-       (let [[x y] p]
-         (recur tail (conj result (map x) (map y)))))
+       (recur tail (reduce #(conj %1 (cst %2)) result p)))
    result)))
 
-(defn rect
-  [ prefix map ]
-  (gget prefix map :top :left :width :height))
