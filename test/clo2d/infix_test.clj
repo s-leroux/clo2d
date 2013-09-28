@@ -49,3 +49,20 @@
       (is (= (parse-infix eq2) {:x 2 :y 6 := 4 })) ))
 
 )
+
+;;
+;; p-eq algebra
+;;
+(deftest p-eq-algebra-test
+  (testing "add"
+    (doseq[[s1 s2 out] ['({:= 3} {:x 1}) '({:= 1}) '({:= 4} {:= 1 :x 1})]]
+      (is (= (p-add s1 s2) out)))))
+
+(deftest parse-infix2-test
+  (doseq [expr [ '()
+                 '(2)
+                 '(2 + 2)
+                 '(2 :p)
+                 '(2 :p - :p)
+               ]]
+    (parse-infix2 expr)))

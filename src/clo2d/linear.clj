@@ -82,6 +82,16 @@
         :default   (recur (assoc result k v) (rest eq)))
     result)))
 
+(defn eq-constant?
+  "Is the equation constant. That is, does only contain
+  := as non-zero term."
+  [ eq ]
+  (loop [terms (seq eq)]
+    (if-let [[[k v] & tail] terms]
+      (and (or (= := k) (fzero? v))
+           (recur tail))
+      true)))
+
 (defn eq-proportional?
   "Are two equations proportional?"
   ( [eq1 eq2] 

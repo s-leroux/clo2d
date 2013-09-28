@@ -68,6 +68,13 @@
                               [{:a 3 :b 6 :e 0 := 9} {:d 0 :a 1 :b 2 := 3} 3]
                               [{:a 3 :b 6 := 9} {:b 2 := 3} nil]] ]
       (is (= (eq-proportional? eq1 eq2) result))))
+
+  (testing "Constant?"
+    (doseq [[eq result] [[{} true]
+                         [{:= 6} true]
+                         [{:x 0 := 6} true]
+                         [{:x 1 := 6} false]] ]
+      (is (= (eq-constant? eq) result))))
 )
 
 (deftest eq-eval-test
