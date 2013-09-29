@@ -29,23 +29,23 @@
    (into {} (for [[k v] map] [(f k) v]))))
 
 (def ^:const point
-  (map parse-infix [ '( :x = :x )
-                     '( :y = :y ) ]))
+  (parse-infix [[ '( :x = :x )
+                  '( :y = :y ) ]]))
 
 (def ^:const rectangular
-  (map parse-infix [ '( :bottom - :top = :height ) 
-                     '( 2 ( :bottom - :y ) = :height )
-                     '( :right - :left = :width )
-                     '( 2 ( :right - :x ) = :width ) ]))
+  (parse-infix [[ '( :bottom - :top = :height ) 
+                  '( 2 ( :bottom - :y ) = :height )
+                  '( :right - :left = :width )
+                  '( 2 ( :right - :x ) = :width ) ]]))
 
 (def ^:const square
-  (concat rectangular (map parse-infix [
-                     '( :height = :width ) ])))
+  (concat rectangular (parse-infix [[
+                     '( :height = :width ) ]])))
 
 (defmacro shape
   [ name base & eqs ]
   `(mp-solve 
-     (map #(prefix-map ~name %1) (concat ~base (map parse-infix '~eqs)))))
+     (map #(prefix-map ~name %1) (concat ~base (parse-infix [[ ~@eqs ]])))))
 
 (defmacro group
   [ & body ]
@@ -57,7 +57,7 @@
 
 (defmacro having
   [ & constraints ]
-  `(mp-solve (map parse-infix '~constraints)))
+  `(mp-solve (parse-infix [[ ~@constraints ]])))
 
 (defn fold*
   [ prefix & kw-list ]

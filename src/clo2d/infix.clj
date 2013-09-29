@@ -2,63 +2,6 @@
   (:use clojure.set)
   (:require [clo2d.linear :as l]))
 
-(defn m-product
-  [ map factor ]
-  (let [ks (keys map)]
-    (zipmap ks (for [k ks] (* factor (map k))))))
-
-(defn back-eval
-  [ values ops ]
-    (let [op (first ops)
-          value (first values)]
-      (case op
-        := (recur (cons (m-product value -1) (rest values)) 
-                  (cons :+ (rest ops)))
-        :+ (let [values (rest values)
-                 v2 (first values)]
-             (recur (cons (merge-with + value v2) (rest values))
-                    (rest ops)))
-
-        value)))
-
-(defn parse-infix
-  "Parse an infix (linear) equation" ;; XXX should return normalized eq.
-  [ eq ]
-  (loop [ terms (cons 0 (cons + eq)) ; force constant term in equation
-          values '()
-          ops '() 
-          sign 1 ]
-    (let [ term (first terms)
-           tail (rest terms) ]
-      (cond
-        (not term)
-        (back-eval values ops)
-
-        (#{+,:+,'+} term)
-        (recur (rest terms) values (cons :+ ops) 1)
-
-        (#{-,:-,'-} term)
-        (recur (rest terms) values (cons :+ ops) -1)
-
-        (#{=,:=,'=} term)
-        (recur (rest terms) values (cons := ops) 1)
-
-        (or (keyword? term) (coll? term))
-        (recur (cons sign terms) values ops 1)
-
-        (number? term)
-        (let [k (first tail) r (rest tail)]
-          (cond
-            (keyword? k)
-            (recur r (cons (m-product { k sign } term) values) ops 1)
-
-            (coll? k)
-            (recur r (cons (m-product (parse-infix k) term) values) ops 1)
-
-            true
-            (recur tail (cons { := (* (- sign) term)} values) ops 1)))
-      ))))
-
 ;;
 ;; Parallel eq algebra
 ;;
@@ -92,13 +35,13 @@
  (let [f (fn[a b]
            (cond 
              (l/eq-constant? a)
-             (l/eq-mul b (- (:= a)))
+             (l/eq-mul b (- (get a := 0)))
   
              (l/eq-constant? b)
-             (l/eq-mul a (- (:= b)))
+             (l/eq-mul a (- (get b := 0)))
  
              :default
-             (throw (IllegalArgumentException. "Could only multiply by constant"))
+             (throw (IllegalArgumentException. "Can only multiply by constant"))
              )
             
         )]
@@ -127,7 +70,7 @@
 
 (defmacro point?
   [ form ]
-  `(not (some #(not (or (keyword? %1) (number? %1) (seq? %1))) ~form)))
+  `(not (some #(not (or (keyword? %1) (number? %1) (coll? %1))) ~form)))
 
 (defn parse-op
   [ op out stack ]
@@ -150,12 +93,15 @@
        (recur out stack))
      [out tail])))
 
+(declare parse-term)
+(declare parse-expr)
+
 (defn parse-seq
   [ lst out stack ]
   (if (point? lst)
     (loop [ s lst out (cons () out) stack stack ]
-      (if-let [[term & tail] s]
-        (let [[out stack] (parse-expr (list term) out (cons :start stack) false)]
+      (if-let [[term & tail] (seq s)]
+        (let [[out stack] (parse-term term out stack)]
           (recur tail (let [[a b & tail] out] (cons (concat b a) tail)) stack))
         [out stack]))
     (parse-expr lst out (cons :start stack) false)))
@@ -183,7 +129,7 @@
       (let [[out stack] (parse-op := out stack )]
         (recur tail out stack false))
 
-      (seq? term)
+      (coll? term)
       (if out-prec
         (recur (cons :* terms) out stack out-prec)
         (let [[out stack] (parse-seq term out stack)]
@@ -196,30 +142,18 @@
           (recur tail out stack true)))
     )))
 
-(defn parse-infix2
-  "Parse an infix (linear) equation.
+(defn parse-term
+  [ term out stack ]
+  (if (coll? term)
+    (parse-expr term out (cons :start stack) false)
+    (push-atom term out stack)))
 
-  Some sample syntax:
-  - Producing one equation:
-    ( 2 :y + 3 = 3 :y )
-    ( :k ( 1 + 2 ) = :v )
-    ( 3 ( :a + 2 :b) = :c )
-
-  - Shortcut to produce two or more equations
-    ( 2 :y + (5 6) = 3 :y ) 
-    ( :k ( (1 2) + (3 4) ) = :v )
-    ( 3 ( :a + 2 :b ) = :c )
-
-  More strictly:
-  - A single keyword is assumed to by an unknown of coefficient 1
-  - A pair of terms is assumed to be a scalar coefficient followed by an
-  equation
-  - A list whose second term is missing or is not an operator is assumed
-    to be a shortcut expression to produce several equations.
-  "
+(defn parse-infix
+  "Parse an infix (linear) equation system."
   ;; XXX should return normalized eq. ?
-  [ eq ]
-  (let [[out stack] (parse-expr eq () '( :start ) false)]
-    (if (or (not= (count out) 1) (seq stack))
+  [ term ]
+  (assert (not (nil? term)))
+  (let [[out stack] (parse-term term () '())]
+    (if (or (> (count out) 1) (seq stack))
       (throw (IllegalArgumentException. "Ill formed expression"))
       (first out))))
