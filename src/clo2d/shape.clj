@@ -42,10 +42,27 @@
   (concat rectangular (parse-infix [[
                      '( :height = :width ) ]])))
 
+(def ^:const elliptic
+  (parse-infix [[ '( :bottom - :top = :height ) 
+                  '( 2 ( :bottom - :y ) = :height )
+                  '( :right - :left = :width )
+                  '( 2 ( :right - :x ) = :width )
+                  '( :radius-x = 1/2 :width)
+                  '( :radius-y = 1/2 :height)]]))
+
+(def ^:const circular
+  (concat elliptic (parse-infix [[
+                     '( :radius = :radius-x )
+                     '( :radius-x = :radius-y ) ]])))
+
+(def ^:const none (mp-solve()))
+
 (defmacro shape
-  [ name base & eqs ]
-  `(mp-solve 
-     (map #(prefix-map ~name %1) (concat ~base (parse-infix [[ ~@eqs ]])))))
+  [ rslv name base & eqs ]
+  `(let [ [ctx# init#] ~rslv]
+     (mp-solve-in ~rslv
+       (map #(prefix-map ~name %1) 
+            (concat ~base (parse-infix [[ ~@eqs ]] ctx#))))))
 
 (defmacro group
   [ & body ]
@@ -53,11 +70,15 @@
     `(let [[ctx#   init#] (group ~@tail)
            [roots# eqs#]  ~head]
         (mp-solve-in [(merge ctx# roots#) init#] eqs#))
-    `(mp-solve ())))
+    `none))
+
+(defmacro group->
+  [ & forms ] `(-> none ~@forms))
 
 (defmacro having
-  [ & constraints ]
-  `(mp-solve (parse-infix [[ ~@constraints ]])))
+  [ rslv & constraints ]
+  `(let [ [ctx# init#] ~rslv]
+     (mp-solve-in ~rslv (parse-infix [[ ~@constraints ]] ctx#))))
 
 (defn fold*
   [ prefix & kw-list ]
