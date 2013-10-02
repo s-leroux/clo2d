@@ -39,21 +39,21 @@
 
 (deftest group-test
   (testing "Shape test"
-   (shape :x point)
-   (shape :x rectangular)
-   (shape :x square)
+   (shape none :x point)
+   (shape none :x rectangular)
+   (shape none :x square)
   )
   (testing "Group creation and manipulation"
-    (let [ g (group (shape :x square) (shape :p1 point)
-                    (having '(:p1:y = :x:top) 
-                            '(:p1:x = :x:right + 50 )
-                            '(:x:top = 50)
-                            '(:x:left = 50)
-                            '(:x:height = 20))) ]
+    (let [ g (group-> (shape :x square) (shape :p1 point)
+                      (having '(:p1:y = :x:top) 
+                              '(:p1:x = :x:right + 50 )
+                              '(:x:top = 50)
+                              '(:x:left = 50)
+                              '(:x:height = 20))) ]
       (is (= (second g) '()))
       (is (= (-- g (nw :x) :p1) [ 50 50 120 50]))))
   (testing "Bounds access"
-    (let [ g (shape :x square '(:height = 10) '(:top = 20) '(:left = 30))]
+    (let [ g (shape none :x square '(:height = 10) '(:top = 20) '(:left = 30))]
       (is (= (second g) '()))
       (is (= (-- g (bounds :x)) [ 30 20 10 10 ]))))
 )

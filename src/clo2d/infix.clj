@@ -63,9 +63,12 @@
 ;;
 
 (defn push-atom
-  [atom out stack]
-  (let [value (if (keyword? atom) { atom 1 } { := (- atom) })]
-    [(cons (list value) out) stack]))
+  [atom out stack dict]
+  (if (keyword? atom)
+    (if-let [value (get dict atom)]
+      (recur value out stack dict)
+      [(cons (list {atom 1 }) out) stack])
+    [(cons (list {:= (- atom) }) out) stack]))
 
 (defn eval-op
   [op out stack]
@@ -109,17 +112,19 @@
 (declare parse-expr)
 
 (defn parse-seq
-  [ lst out stack ]
+  [ lst out stack dict ]
   (if (point? lst)
     (loop [ s lst out (cons () out) stack stack ]
       (if-let [[term & tail] (seq s)]
-        (let [[out stack] (parse-term term out stack)]
-          (recur tail (let [[a b & tail] out] (cons (concat b a) tail)) stack))
+        (let [[out stack] (parse-term term out stack dict)]
+          (recur tail
+                 (let [[a b & tail] out] (cons (concat b a) tail))
+                 stack))
         [out stack]))
-    (parse-expr lst out (cons :start stack) false)))
+    (parse-expr lst out (cons :start stack) dict false)))
 
 (defn parse-expr
-  [ terms out stack out-prec]
+  [ terms out stack dict out-prec]
   (let [ [term & tail] terms]
     (cond
       (not term)
@@ -127,49 +132,51 @@
 
       (contains? #{:+,+,'+} term)
       (let [[out stack] (parse-op :+ out stack )]
-        (recur tail out stack false))
+        (recur tail out stack dict false))
 
       (contains? #{:-,-,'-} term)
       (let [[out stack] (parse-op :- out stack )]
-        (recur tail out stack false))
+        (recur tail out stack dict false))
 
       (contains? #{:*,*,'*} term)
       (let [[out stack] (parse-op :* out stack )]
-        (recur tail out stack false))
+        (recur tail out stack dict false))
 
       (contains? #{:**,**,'**} term)
       (let [[out stack] (parse-op :** out stack )]
-        (recur tail out stack false))
+        (recur tail out stack dict false))
 
       (contains? #{:=,=,'=} term)
       (let [[out stack] (parse-op := out stack )]
-        (recur tail out stack false))
+        (recur tail out stack dict false))
 
       (coll? term)
       (if out-prec
-        (recur (cons :* terms) out stack out-prec)
-        (let [[out stack] (parse-seq term out stack)]
-          (recur tail out stack true)))
+        (recur (cons :* terms) out stack dict out-prec)
+        (let [[out stack] (parse-seq term out stack dict)]
+          (recur tail out stack dict true)))
 
       (or (number? term) (keyword? term))
       (if out-prec
-        (recur (cons :* terms) out stack out-prec)
-        (let [[out stack] (push-atom term out stack)]
-          (recur tail out stack true)))
+        (recur (cons :* terms) out stack dict out-prec)
+        (let [[out stack] (push-atom term out stack dict)]
+          (recur tail out stack dict true)))
     )))
 
 (defn parse-term
-  [ term out stack ]
+  [ term out stack dict]
   (if (coll? term)
-    (parse-seq term out stack)
-    (push-atom term out stack)))
+    (parse-seq term out stack dict)
+    (push-atom term out stack dict)))
 
 (defn parse-infix
   "Parse an infix (linear) equation system."
   ;; XXX should return normalized eq. ?
-  [ term ]
+  ( [ term ] (parse-infix term {}))
+  (
+  [ term dict ]
   (assert (not (nil? term)))
-  (let [[out stack] (parse-term term () '())]
+  (let [[out stack] (parse-term term () '() dict)]
     (if (or (> (count out) 1) (seq stack))
       (throw (IllegalArgumentException. "Ill formed expression"))
-      (first out))))
+      (first out)))))
