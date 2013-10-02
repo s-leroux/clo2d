@@ -2,6 +2,7 @@
   (:use clojure.set)
   (:require [clo2d.linear :as l]))
 
+
 ;;
 ;; Parallel eq algebra
 ;;
@@ -13,10 +14,12 @@
       (= c1 c2)
       (map f eq1 eq2)
 
-      (and (= 1 c1) (> c2 1))
+      ; (and (= 1 c1) (> c2 1))
+      (> c2 c1)
       (map f (cycle eq1) eq2)
 
-      (and (= 1 c2) (> c1 1))
+      ; (and (= 1 c2) (> c1 1))
+      (> c1 c2)
       (map f eq1 (cycle eq2))
 
       :default
@@ -47,6 +50,13 @@
         )]
    `(p-do ~f ~eq1 ~eq2)))
 
+(def **) ;; homothecy operator
+
+(defn p-homothecy
+  [factor a-b]
+  (let [[a b] (split-at (/ (count a-b) 2) a-b)]
+    (p-add a (p-mul factor (p-sub b a)))))
+
 ;;
 ;; New Shunting-yard parser
 ;; (http://en.wikipedia.org/wiki/Shunting-yard_algorithm)
@@ -66,6 +76,7 @@
       :- [(cons (p-sub a b) tail) stack]
       := [(cons (p-sub a b) tail) stack]
       :* [(cons (p-mul a b) tail) stack]
+      :** [(cons (p-homothecy a b) tail) stack]
     )))
 
 (defmacro point?
@@ -74,10 +85,11 @@
 
 (defn parse-op
   [ op out stack ]
-  (let [prec { :+     5
-               :-     5
-               :*     6
-               :=     4 
+  (let [prec { :+     4
+               :-     4
+               :*     7
+               :**    5
+               :=     2 
                :start 0 }
         [o2 & tail] stack]
     (if (and o2 (> (prec o2) (prec op)))
@@ -125,6 +137,10 @@
       (let [[out stack] (parse-op :* out stack )]
         (recur tail out stack false))
 
+      (contains? #{:**,**,'**} term)
+      (let [[out stack] (parse-op :** out stack )]
+        (recur tail out stack false))
+
       (contains? #{:=,=,'=} term)
       (let [[out stack] (parse-op := out stack )]
         (recur tail out stack false))
@@ -145,7 +161,7 @@
 (defn parse-term
   [ term out stack ]
   (if (coll? term)
-    (parse-expr term out (cons :start stack) false)
+    (parse-seq term out stack)
     (push-atom term out stack)))
 
 (defn parse-infix
