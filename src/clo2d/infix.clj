@@ -50,7 +50,7 @@
         )]
    `(p-do ~f ~eq1 ~eq2)))
 
-(def **) ;; homothecy operator
+(def ^:dynamic **) ;; homothecy operator (dynamic to silent warning :/ )
 
 (defn p-homothecy
   [factor a-b]
